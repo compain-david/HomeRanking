@@ -73,6 +73,8 @@ export function useSync(
   const [error, setError] = useState<string | null>(null)
   const [history, setHistory] = useState<History | null>(null)
   const [lastPull, setLastPull] = useState<string | null>(null)
+  const [lastPullAt, setLastPullAt] = useState<number | null>(null)
+  const [stale, setStale] = useState(false)
   const onRemoteRef = useRef(onRemote)
   const pointsForRef = useRef(pointsFor)
   pointsForRef.current = pointsFor
@@ -118,7 +120,9 @@ export function useSync(
         if (row.count > 0) next[row.person as PersonId][row.chore_id] = row.count
       }
       onRemoteRef.current(next)
-      setLastPull(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+      setLastPull(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))
+      setLastPullAt(Date.now())
+      setStale(false)
       setState('live')
       setError(null)
     },
@@ -184,6 +188,20 @@ export function useSync(
       supabase.removeChannel(channel)
     }
   }, [household, pull, flush])
+
+  // Realtime can drop without any error surfacing. Rather than trusting it,
+  // re-pull on a slow timer and flag when nothing has arrived for a while.
+  useEffect(() => {
+    if (!household) return
+    const id = setInterval(
+      () => {
+        if (document.visibilityState === 'visible') pull(household)
+        if (lastPullAt && Date.now() - lastPullAt > 15 * 60 * 1000) setStale(true)
+      },
+      5 * 60 * 1000,
+    )
+    return () => clearInterval(id)
+  }, [household, pull, lastPullAt])
 
   const push = useCallback(
     async (person: PersonId, choreId: string, count: number) => {
@@ -392,6 +410,7 @@ export function useSync(
     error,
     bootstrapping,
     lastPull,
+    stale,
     retry: bootstrap,
     push,
     create,

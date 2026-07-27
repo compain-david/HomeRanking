@@ -138,10 +138,13 @@ function Row({
   chore,
   count,
   onBump,
+  onBoth,
 }: {
   chore: Chore
   count: number
   onBump: (delta: number) => void
+  /** long-press: you did it together, from one phone */
+  onBoth?: () => void
 }) {
   const [pulse, setPulse] = useState(false)
   const p = points(chore)
@@ -186,7 +189,16 @@ function Row({
         >
           {count}
         </span>
-        <button className="step step-plus" onClick={() => bump(1)} aria-label={`Log ${chore.name}`}>
+        <button
+          className="step step-plus"
+          onClick={() => bump(1)}
+          onContextMenu={(e) => {
+            e.preventDefault()
+            onBoth?.()
+          }}
+          aria-label={`Log ${chore.name}`}
+          title="Long-press to log for both of you"
+        >
           +
         </button>
       </div>
@@ -649,6 +661,10 @@ export default function App() {
                 chore={c}
                 count={counts[who][c.id] ?? 0}
                 onBump={(delta) => bump(who, c.id, delta)}
+                onBoth={() => {
+                  bump('alix', c.id, 1)
+                  bump('david', c.id, 1)
+                }}
               />
             ))}
           </div>
@@ -668,6 +684,10 @@ export default function App() {
                 chore={c}
                 count={counts[who][c.id] ?? 0}
                 onBump={(delta) => bump(who, c.id, delta)}
+                onBoth={() => {
+                  bump('alix', c.id, 1)
+                  bump('david', c.id, 1)
+                }}
               />
             ))}
           </div>
@@ -700,6 +720,10 @@ export default function App() {
                     chore={c}
                     count={counts[who][c.id] ?? 0}
                     onBump={(d) => bump(who, c.id, d)}
+                    onBoth={() => {
+                      bump('alix', c.id, 1)
+                      bump('david', c.id, 1)
+                    }}
                   />
                 ))}
               </div>
@@ -750,7 +774,7 @@ export default function App() {
         <p className="footer-note">
           {closedWeeks.includes(wk)
             ? 'You have looked back at this week. It still counts until Sunday, then resets on its own.'
-            : 'The week resets after Sunday on its own. Use − on a row to correct a mistake.'}
+            : 'The week resets after Sunday on its own. Use − to correct a mistake, and press and hold + when you both did it.'}
         </p>
       </footer>
     </div>
@@ -766,7 +790,9 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
   const connected = !!sync.household
 
   const label = connected
-    ? sync.state === 'live'
+    ? sync.stale
+      ? 'not updating'
+      : sync.state === 'live'
       ? 'synced'
       : sync.state === 'offline'
         ? 'offline'
@@ -794,7 +820,7 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
     <div className="sync">
       <button
         className="hdr-pill glass"
-        data-state={connected ? sync.state : 'none'}
+        data-state={connected ? (sync.stale ? 'offline' : sync.state) : 'none'}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
