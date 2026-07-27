@@ -415,23 +415,41 @@ export default function App() {
 
 function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
   const [open, setOpen] = useState(false)
-  const [code, setCode] = useState('')
+  const [copied, setCopied] = useState(false)
   const connected = !!sync.household
 
-  const label =
-    !connected
-      ? 'This device only'
-      : sync.state === 'live'
-        ? `Shared · ${sync.household!.code}`
-        : sync.state === 'offline'
-          ? 'Offline — saved here, will sync'
-          : sync.state === 'error'
-            ? 'Sync problem'
-            : 'Connecting…'
+  const label = connected
+    ? sync.state === 'live'
+      ? 'Shared with Alix'
+      : sync.state === 'offline'
+        ? 'Offline — saved here'
+        : 'Connecting…'
+    : sync.state === 'error'
+      ? 'Not shared yet'
+      : 'Setting up…'
+
+  const share = async () => {
+    if (!sync.shareUrl) return
+    const data = { title: 'HomeRanking', text: 'Our week, shared.', url: sync.shareUrl }
+    try {
+      if (navigator.share) await navigator.share(data)
+      else {
+        await navigator.clipboard.writeText(sync.shareUrl)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2500)
+      }
+    } catch {
+      /* dismissed */
+    }
+  }
 
   return (
     <div className="sync">
-      <button className="sync-chip" data-state={connected ? sync.state : 'none'} onClick={() => setOpen((o) => !o)}>
+      <button
+        className="sync-chip"
+        data-state={connected ? sync.state : 'none'}
+        onClick={() => setOpen((o) => !o)}
+      >
         <span className="sync-dot" />
         {label}
       </button>
@@ -441,47 +459,25 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
           {connected ? (
             <>
               <p className="sync-note">
-                Share this code with {`Alix`} so her phone shows the same week.
+                Send Alix this link. She opens it once and both phones show the same week.
               </p>
-              <div className="sync-code">{sync.household!.code}</div>
               <div className="sync-actions">
-                <button
-                  className="ghost"
-                  onClick={() => navigator.clipboard?.writeText(sync.household!.code)}
-                >
-                  Copy code
+                <button className="ghost" data-primary="true" onClick={share}>
+                  {copied ? 'Link copied ✓' : 'Send the link'}
                 </button>
                 <button className="ghost" onClick={sync.leave}>
                   Disconnect
                 </button>
               </div>
+              <span className="setup-hint">Code: {sync.household!.code}</span>
             </>
           ) : (
             <>
               <p className="sync-note">
-                Right now this week is saved on this device only. Connect once and both
-                phones show the same numbers.
+                Everything you log is safe on this device. Sharing between phones needs
+                the database switched on once.
               </p>
-              <div className="sync-actions">
-                <button className="ghost" data-primary="true" onClick={sync.create}>
-                  Start a shared home
-                </button>
-              </div>
               <SetupGuide />
-              <div className="sync-join">
-                <input
-                  className="sync-input"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="Or enter a code"
-                  aria-label="Household invite code"
-                  autoCapitalize="characters"
-                  spellCheck={false}
-                />
-                <button className="ghost" onClick={() => sync.join(code)} disabled={code.length < 4}>
-                  Join
-                </button>
-              </div>
             </>
           )}
           {sync.error && <p className="sync-error">{sync.error}</p>}
@@ -529,6 +525,21 @@ function SetupGuide() {
               </a>
             </div>
             <span className="setup-hint">Paste it in, press Run. Once, ever.</span>
+          </li>
+          <li>
+            <span className="setup-step">Wake the API up</span>
+            <div className="sync-actions">
+              <button
+                className="ghost"
+                onClick={() => navigator.clipboard?.writeText("notify pgrst, 'reload schema';")}
+              >
+                Copy the one-liner
+              </button>
+            </div>
+            <span className="setup-hint">
+              Run it in the same editor. Supabase caches the schema, so new functions stay
+              invisible until it is told to look again.
+            </span>
           </li>
           <li>
             <span className="setup-step">Allow anonymous sign-in</span>

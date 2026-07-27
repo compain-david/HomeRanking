@@ -14,8 +14,10 @@ function readable(message: string): string {
     return 'Could not reach the server. Your week is safe on this device and will sync when you are back online.'
   if (m.includes('disabled') || m.includes('anonymous'))
     return 'Anonymous sign-ins are switched off. Turn them on in Supabase under Authentication → Sign In / Providers.'
-  if (m.includes('does not exist') || m.includes('schema cache'))
-    return 'The database tables are not set up yet. Run supabase/schema.sql in the Supabase SQL editor.'
+  if (m.includes('function') || m.includes('schema cache'))
+    return "The database is set up but Supabase has not noticed yet. Run: notify pgrst, 'reload schema';"
+  if (m.includes('relation') && m.includes('does not exist'))
+    return 'The tables are missing. Run supabase/schema.sql in the Supabase SQL editor.'
   if (m.includes('no household')) return 'No household has that code. Check it and try again.'
   return message
 }
@@ -196,6 +198,12 @@ export function useSync(weekStart: string, local: Counts, onRemote: (c: Counts) 
     [household, weekStart],
   )
 
+  /** A code handed over in a link: homeranking/#join=ABCD1234 */
+  const codeFromUrl = () => {
+    const m = /[#?&]join=([A-Za-z0-9]+)/.exec(window.location.hash + window.location.search)
+    return m ? m[1].toUpperCase() : null
+  }
+
   const create = useCallback(async () => {
     setError(null)
     const { data, error } = await supabase.rpc('create_household', { p_name: 'Our home' })
@@ -222,11 +230,37 @@ export function useSync(weekStart: string, local: Counts, onRemote: (c: Counts) 
     setHousehold(h)
   }, [])
 
+  // Nobody should have to decide to "start a household" — there is only ever
+  // one, and it exists the moment the app opens. A link is what gets shared.
+  const bootstrapped = useRef(false)
+  useEffect(() => {
+    if (household || bootstrapped.current) return
+    bootstrapped.current = true
+    ;(async () => {
+      for (let i = 0; i < 20; i++) {
+        const { data } = await supabase.auth.getSession()
+        if (data.session) break
+        await new Promise((r) => setTimeout(r, 250))
+      }
+      const invited = codeFromUrl()
+      if (invited) {
+        await join(invited)
+        history.replaceState(null, '', window.location.pathname)
+      } else {
+        await create()
+      }
+    })()
+  }, [household, create, join])
+
+  const shareUrl = household
+    ? `${window.location.origin}${window.location.pathname}#join=${household.code}`
+    : null
+
   const leave = useCallback(() => {
     localStorage.removeItem(HOUSEHOLD_KEY)
     setHousehold(null)
     setState('connecting')
   }, [])
 
-  return { household, state, error, push, create, join, leave }
+  return { household, state, error, push, create, join, leave, shareUrl }
 }
