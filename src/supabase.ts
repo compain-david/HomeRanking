@@ -16,3 +16,20 @@ export const supabase = createClient(URL, KEY, {
 })
 
 export const HOUSEHOLD_KEY = 'homeranking:household'
+
+/**
+ * One household, shared by every device that opens this app.
+ *
+ * Letting each device create its own meant two phones could both report
+ * "synced" while holding completely different data — a worse failure than not
+ * syncing at all, because nothing looked wrong. A fixed code makes every
+ * device converge on the same household with no join step.
+ *
+ * The trade-off, stated plainly: this code ships inside the public bundle, so
+ * anyone who finds the site and reads its source could join. For a two-person
+ * chore list on an unlisted URL that is an acceptable price for never having
+ * to think about setup again. Change it here to lock everyone out and start
+ * fresh.
+ */
+export const HOUSEHOLD_CODE =
+  import.meta.env.VITE_HOUSEHOLD_CODE ?? 'A11X0DAV'

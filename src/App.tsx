@@ -780,17 +780,17 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
           {connected ? (
             <>
               <p className="sync-note">
-                Send Alix this link. She opens it once and both phones show the same week.
+                <strong>Every device shows the same week.</strong> Open this page on any
+                phone or computer and it lands here — no code, no joining.
               </p>
               <div className="sync-actions">
                 <button className="ghost" data-primary="true" onClick={share}>
                   {copied ? 'Link copied ✓' : 'Send the link'}
                 </button>
-                <button className="ghost" onClick={sync.leave}>
-                  Disconnect
-                </button>
               </div>
-              <span className="setup-hint">Code: {sync.household!.code}</span>
+              <span className="setup-hint">
+                Alix only needs the address. The link just saves her typing it.
+              </span>
             </>
           ) : (
             <>

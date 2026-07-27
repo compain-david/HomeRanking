@@ -200,6 +200,46 @@ $$;
 -- Both refuse to run without auth.uid(), but there is no reason for them to be
 -- reachable by the anon role at all. is_member is deliberately left alone: the
 -- RLS policies call it as the querying role, so revoking it breaks every policy.
+-- anywhere lands on the same data with no join step.
+create or replace function public.ensure_household(p_code text, p_name text default 'Our home')
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_id   uuid;
+  v_code text := upper(trim(p_code));
+begin
+  if auth.uid() is null then
+    raise exception 'not signed in';
+  end if;
+
+  select h.id into v_id from households h where h.invite_code = v_code;
+
+  if v_id is null then
+    -- two devices opening at once must not create two households
+    insert into households (name, invite_code)
+    values (p_name, v_code)
+    on conflict (invite_code) do nothing
+    returning households.id into v_id;
+
+    if v_id is null then
+      select h.id into v_id from households h where h.invite_code = v_code;
+    end if;
+  end if;
+
+  insert into household_members (household_id, user_id)
+  values (v_id, auth.uid())
+  on conflict do nothing;
+
+  return v_id;
+end;
+$$;
+
+revoke all on function public.ensure_household(text, text) from anon, public;
+grant execute on function public.ensure_household(text, text) to authenticated;
+
 revoke all on function public.create_household(text) from anon, public;
 revoke all on function public.join_household(text)   from anon, public;
 grant execute on function public.create_household(text) to authenticated;

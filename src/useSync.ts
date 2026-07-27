@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { HOUSEHOLD_KEY, supabase } from './supabase'
+import { HOUSEHOLD_CODE, HOUSEHOLD_KEY, supabase } from './supabase'
 
 export type PersonId = 'alix' | 'david'
 export type Counts = Record<PersonId, Record<string, number>>
@@ -280,13 +280,21 @@ export function useSync(
         setError(readable('anonymous sign-in unavailable'))
         return
       }
-      const invited = codeFromUrl()
-      if (invited) {
-        await join(invited)
-        window.history.replaceState(null, '', window.location.pathname)
-      } else {
-        await create()
+      const invited = codeFromUrl() ?? HOUSEHOLD_CODE
+      const { data: joined, error } = await supabase.rpc('ensure_household', {
+        p_code: invited,
+      })
+      if (error || !joined) {
+        setState('error')
+        setError(error ? readable(error.message) : 'Could not reach the household.')
+        return
       }
+      const h = { id: joined as string, code: invited }
+      localStorage.setItem(HOUSEHOLD_KEY, JSON.stringify(h))
+      setHousehold(h)
+      window.history.replaceState(null, '', window.location.pathname)
+      // carry anything logged on this device before it joined
+      await pushAll(localRef.current)
     } finally {
       setBootstrapping(false)
     }
