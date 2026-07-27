@@ -125,7 +125,13 @@ button {
   top: 0;
   z-index: 10;
   padding-top: calc(14px + env(safe-area-inset-top));
-  background: linear-gradient(var(--paper) 78%, transparent);
+  padding-bottom: 2px;
+  background: var(--paper);
+  transition: box-shadow 0.2s var(--ease-out);
+}
+
+.panel[data-compact='true'] {
+  box-shadow: 0 8px 20px -18px rgba(0, 0, 0, 0.9);
 }
 
 .masthead {
@@ -211,6 +217,23 @@ button {
   justify-content: space-between;
   gap: 14px;
   padding: 18px 2px 12px;
+  overflow: hidden;
+  transition:
+    max-height 0.3s var(--ease-out),
+    opacity 0.2s var(--ease-out),
+    padding 0.3s var(--ease-out);
+  max-height: 110px;
+}
+
+.panel[data-compact='true'] .readout {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 4px;
+  padding-bottom: 0;
+}
+
+.panel[data-compact='true'] .masthead {
+  margin-bottom: 8px;
 }
 
 .readout-total {
@@ -307,6 +330,18 @@ button {
   margin-top: 9px;
   font-size: 12.5px;
   color: var(--muted);
+  overflow: hidden;
+  max-height: 60px;
+  transition:
+    max-height 0.3s var(--ease-out),
+    opacity 0.2s var(--ease-out),
+    margin 0.3s var(--ease-out);
+}
+
+.panel[data-compact='true'] .beam-verdict {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
 }
 
 .chip {
@@ -494,21 +529,36 @@ button {
 .row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px 8px 12px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   transition: border-color 0.2s var(--ease-out);
+  overflow: hidden;
+}
+
+/* the name area is itself the log button, so the primary target is the
+   width of the row rather than a 30px circle */
+.row-hit {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 10px 8px 10px 12px;
+  min-height: 56px;
+  justify-content: center;
+  text-align: left;
+  border-radius: var(--r-md) 0 0 var(--r-md);
+  transition: background 0.15s var(--ease-out);
+}
+
+.row-hit:active {
+  background: var(--sunken);
 }
 
 .row[data-done='true'] {
   border-color: color-mix(in srgb, var(--who) 38%, var(--line));
-}
-
-.row-main {
-  flex: 1;
-  min-width: 0;
 }
 
 .row-name {
@@ -520,7 +570,6 @@ button {
   display: flex;
   align-items: center;
   gap: 7px;
-  margin-top: 3px;
 }
 
 .row-pts {
@@ -563,13 +612,13 @@ button {
 .stepper {
   display: flex;
   align-items: center;
-  gap: 2px;
   flex: none;
+  padding-right: 4px;
 }
 
 .step {
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -594,12 +643,27 @@ button {
 }
 
 .step-plus {
+  position: relative;
+  color: var(--who);
+}
+
+/* the filled disc is drawn inside the 44px target rather than being it */
+.step-plus::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
   background: var(--who);
+  z-index: -1;
+}
+
+.step-plus {
   color: var(--card);
+  isolation: isolate;
 }
 
 .step-plus:not(:disabled):hover {
-  background: var(--who);
+  background: none;
   filter: brightness(1.12);
 }
 
@@ -655,7 +719,8 @@ button {
   font-family: var(--data);
   font-size: 11px;
   color: var(--muted);
-  padding: 7px 11px;
+  min-height: 44px;
+  padding: 7px 14px;
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   white-space: nowrap;

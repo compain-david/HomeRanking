@@ -98,14 +98,15 @@ function Row({
 
   return (
     <div className="row" data-done={count > 0}>
-      <div className="row-main">
-        <div className="row-name">{chore.name}</div>
-        <div className="row-meta">
+      {/* the whole left side logs the chore, so the tap target is the row */}
+      <button className="row-hit" onClick={() => bump(1)} aria-label={`Log ${chore.name}`}>
+        <span className="row-name">{chore.name}</span>
+        <span className="row-meta">
           <Ticks chore={chore} />
           <span className="row-pts">{p} pts</span>
           <span className="row-target">target {chore.target}</span>
-        </div>
-      </div>
+        </span>
+      </button>
       <div className="stepper">
         <button
           className="step"
@@ -122,11 +123,7 @@ function Row({
         >
           {count}
         </span>
-        <button
-          className="step step-plus"
-          onClick={() => bump(1)}
-          aria-label={`Log ${chore.name}`}
-        >
+        <button className="step step-plus" onClick={() => bump(1)} aria-label={`Log ${chore.name}`}>
           +
         </button>
       </div>
@@ -143,6 +140,13 @@ export default function App() {
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(CATEGORIES.map((c, i) => [c.name, i === 0])),
   )
+  const [compact, setCompact] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setCompact(window.scrollY > 64)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     localStorage.setItem(storageKey(wk), JSON.stringify(counts))
@@ -209,7 +213,7 @@ export default function App() {
 
   return (
     <div className="app" style={style}>
-      <header className="panel">
+      <header className="panel" data-compact={compact}>
         <div className="masthead">
           <div className="wordmark">
             Home<span>Ranking</span>
@@ -236,7 +240,9 @@ export default function App() {
 
         <div className="readout">
           <div>
-            <div className="readout-total">{shownTotal}</div>
+            <div className="readout-total" aria-live="polite" aria-atomic="true">
+              {shownTotal}
+            </div>
             <span className="readout-label">points this week</span>
           </div>
           <div className="readout-side">
