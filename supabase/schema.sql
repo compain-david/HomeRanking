@@ -41,9 +41,8 @@ create table if not exists public.entries (
 create index if not exists entries_week_idx
   on public.entries (household_id, week_start);
 
--- for households created before these columns existed
+-- for households created before the points column existed
 alter table public.entries add column if not exists points integer not null default 0;
-alter table public.chores  add column if not exists emoji  text not null default '';
 
 -- The household's own chore list. Points are meaningless unless both phones
 -- agree on them, so this cannot live in one device's storage.
@@ -62,6 +61,9 @@ create table if not exists public.chores (
   is_active     boolean not null default true,
   unique (household_id, chore_key)
 );
+
+-- for households created before the emoji column existed
+alter table public.chores add column if not exists emoji text not null default '';
 
 -- ------------------------------------------------------------ membership ---
 
