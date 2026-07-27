@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { points, type Chore } from './data/chores'
 import { daysLeft, weekKey, weekLabel } from './week'
 import { EMPTY_COUNTS, useSync, type Counts, type PersonId } from './useSync'
 import SCHEMA_SQL from '../supabase/schema.sql?raw'
-import Settings from './Settings'
-import AllTime from './AllTime'
+const Settings = lazy(() => import('./Settings'))
+const AllTime = lazy(() => import('./AllTime'))
 import { CATEGORY_EMOJI, CATEGORY_NAMES, useChores } from './useChores'
 
 const PROJECT = 'jasildjjlncoriepjosp'
@@ -208,6 +208,25 @@ export default function App() {
   }, [choreApi.chores])
   const [view, setView] = useState<'week' | 'all' | 'settings'>('week')
 
+  // What this person reaches for most, pinned above the categories. Ranked on
+  // history rather than this week, so the shortcut is there on Monday morning
+  // when the week is still empty — which is exactly when scrolling hurts most.
+  const usual = useMemo(() => {
+    const hist = sync.history ?? localHistory((id) => chorePoints[id] ?? 0)
+    const live = counts[who]
+    const scored = choreApi.chores
+      .filter((c) => c.active && c.name.trim())
+      .map((c) => ({
+        chore: c,
+        rank: (hist.perChore[c.id]?.[who] ?? 0) + (live[c.id] ?? 0) * 0.5,
+      }))
+      .filter((x) => x.rank > 0)
+      .sort((a, b) => b.rank - a.rank)
+      .slice(0, 5)
+    // one or two entries is not a shortcut, it is noise
+    return scored.length >= 3 ? scored.map((x) => x.chore) : []
+  }, [sync.history, choreApi.chores, who, counts, chorePoints])
+
   // only chores that are switched on, grouped the way the list is drawn
   const groups = useMemo(
     () =>
@@ -308,7 +327,9 @@ export default function App() {
   if (view === 'settings') {
     return (
       <div className="app" style={style}>
-        <Settings api={choreApi} onClose={() => setView('week')} />
+        <Suspense fallback={<p className="loading">Loading…</p>}>
+          <Settings api={choreApi} onClose={() => setView('week')} />
+        </Suspense>
       </div>
     )
   }
@@ -316,12 +337,14 @@ export default function App() {
   if (view === 'all') {
     return (
       <div className="app" style={style}>
-        <AllTime
-          history={sync.history ?? localHistory((id) => chorePoints[id] ?? 0)}
-          chores={choreApi.chores}
-          currentWeek={wk}
-          onClose={() => setView('week')}
-        />
+        <Suspense fallback={<p className="loading">Loading…</p>}>
+          <AllTime
+            history={sync.history ?? localHistory((id) => chorePoints[id] ?? 0)}
+            chores={choreApi.chores}
+            currentWeek={wk}
+            onClose={() => setView('week')}
+          />
+        </Suspense>
       </div>
     )
   }
@@ -457,6 +480,25 @@ export default function App() {
           </p>
         )}
       </section>
+
+      {usual.length > 0 && (
+        <section className="cat" key="usual">
+          <div className="cat-head" aria-hidden="true">
+            <span className="cat-emoji">↩</span>
+            <span className="cat-name">What you do most</span>
+          </div>
+          <div className="cat-body">
+            {usual.map((c) => (
+              <Row
+                key={`usual-${c.id}`}
+                chore={c}
+                count={counts[who][c.id] ?? 0}
+                onBump={(delta) => bump(who, c.id, delta)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {groups.map((cat) => {
         const logged = cat.chores.reduce((s, c) => s + (counts[who][c.id] ?? 0), 0)

@@ -5,7 +5,11 @@ import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 
 const dist = 'dist'
-const assets = readdirSync(join(dist, 'assets')).map((f) => `./assets/${f}`)
+const assets = [
+  ...readdirSync(join(dist, 'assets')).map((f) => `./assets/${f}`),
+  // self-hosted faces, or the typography degrades the moment you go offline
+  ...readdirSync(join(dist, 'fonts')).map((f) => `./fonts/${f}`),
+]
 const swPath = join(dist, 'sw.js')
 const src = readFileSync(swPath, 'utf8')
 
