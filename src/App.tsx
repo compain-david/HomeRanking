@@ -834,6 +834,33 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
             </>
           )}
           {sync.error && <p className="sync-error">{sync.error}</p>}
+
+          {/* Always visible: when sync misbehaves, "which build am I on and
+              which household is this?" is the only question worth answering. */}
+          <div className="diag">
+            <span>build {__BUILD__}</span>
+            <span>home {sync.household ? sync.household.id.slice(0, 8) : 'none'}</span>
+            <span>{sync.state}</span>
+            <span>{sync.lastPull ? `pulled ${sync.lastPull}` : 'not pulled yet'}</span>
+          </div>
+          <div className="sync-actions">
+            <button className="ghost" onClick={() => sync.loadHistory()}>
+              Refresh now
+            </button>
+            <button
+              className="ghost"
+              onClick={async () => {
+                if ('caches' in window) {
+                  for (const k of await caches.keys()) await caches.delete(k)
+                }
+                const regs = await navigator.serviceWorker?.getRegistrations?.()
+                for (const r of regs ?? []) await r.unregister()
+                location.reload()
+              }}
+            >
+              Force update
+            </button>
+          </div>
         </div>
       )}
     </div>

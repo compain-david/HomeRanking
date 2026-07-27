@@ -2263,3 +2263,15 @@ a.ghost {
   justify-content: center;
   min-height: 48px;
 }
+
+.diag {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-family: var(--data);
+  font-size: 10px;
+  color: var(--faint);
+  padding: 8px 0 2px;
+  border-top: 1px solid var(--line);
+  margin-top: 4px;
+}

@@ -72,6 +72,7 @@ export function useSync(
   const [state, setState] = useState<SyncState>('connecting')
   const [error, setError] = useState<string | null>(null)
   const [history, setHistory] = useState<History | null>(null)
+  const [lastPull, setLastPull] = useState<string | null>(null)
   const onRemoteRef = useRef(onRemote)
   const pointsForRef = useRef(pointsFor)
   pointsForRef.current = pointsFor
@@ -117,6 +118,7 @@ export function useSync(
         if (row.count > 0) next[row.person as PersonId][row.chore_id] = row.count
       }
       onRemoteRef.current(next)
+      setLastPull(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
       setState('live')
       setError(null)
     },
@@ -389,6 +391,7 @@ export function useSync(
     state,
     error,
     bootstrapping,
+    lastPull,
     retry: bootstrap,
     push,
     create,
