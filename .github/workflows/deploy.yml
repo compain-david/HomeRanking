@@ -2,7 +2,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    # the repo has no `main` yet — this branch is currently the default, so it
+    # is listed here too. Once `main` exists, that entry takes over.
+    branches: [main, claude/chore-scoring-system-1p6bpg]
   workflow_dispatch:
 
 permissions:
