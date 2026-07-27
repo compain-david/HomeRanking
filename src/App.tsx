@@ -466,6 +466,34 @@ export default function App() {
           ))}
         </div>
 
+        {usual.length > 0 && (
+          <div className="quicklog" role="group" aria-label="Quick log">
+            {usual.slice(0, 5).map((c) => {
+              const n = counts[who][c.id] ?? 0
+              return (
+                <button
+                  key={`q-${c.id}`}
+                  className="qchip"
+                  data-any={n > 0}
+                  onClick={() => bump(who, c.id, 1)}
+                  onContextMenu={(e) => {
+                    // long-press on touch surfaces fires this; catch-up logging
+                    // should not cost ten taps
+                    e.preventDefault()
+                    bump(who, c.id, 1)
+                    bump(who, c.id, 1)
+                  }}
+                  aria-label={`Log ${c.name}`}
+                >
+                  {c.emoji && <span aria-hidden="true">{c.emoji}</span>}
+                  <span className="qchip-name">{c.name}</span>
+                  {n > 0 && <span className="qchip-n">{n}</span>}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
         <section className="hero glass">
           <div className="hero-totals">
             <div className="hero-side" data-side="left" data-active={who === 'alix'}>

@@ -2402,3 +2402,65 @@ a.ghost {
 .hdr-pill {
   min-height: 44px;
 }
+
+/* ---------------- quick log ---------------- */
+
+/* Measured: the first chore row sat 737px down, so opening the app and
+   logging meant scrolling past the whole hero. These sit above it. */
+.quicklog {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 0 14px;
+  margin: 0 -14px 0;
+  padding-left: 14px;
+  padding-right: 14px;
+  scroll-snap-type: x proximity;
+}
+
+.quicklog::-webkit-scrollbar {
+  display: none;
+}
+
+.qchip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 44px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  font-size: 13px;
+  color: var(--muted);
+  scroll-snap-align: start;
+  transition:
+    background 0.15s var(--ease-out),
+    color 0.15s var(--ease-out);
+  max-width: 200px;
+}
+
+.qchip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qchip:active {
+  transform: scale(0.97);
+}
+
+.qchip[data-any='true'] {
+  background: color-mix(in srgb, var(--who) 16%, transparent);
+  border-color: color-mix(in srgb, var(--who) 42%, transparent);
+  color: var(--ink);
+}
+
+.qchip-n {
+  font-family: var(--data);
+  font-size: 12px;
+  color: var(--who);
+  flex: none;
+}

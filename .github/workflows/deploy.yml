@@ -26,6 +26,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # a broken build should never reach the phones
+      - run: npm test
       - run: npm run build
         env:
           GITHUB_PAGES: '1'
