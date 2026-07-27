@@ -49,12 +49,16 @@ function ChoreEditor({
   chore,
   api,
   onClose,
+  onDelete,
 }: {
   chore: EditableChore
   api: ReturnType<typeof useChores>
   onClose: () => void
+  onDelete: (c: EditableChore) => void
 }) {
   const [draft, setDraft] = useState(chore)
+  const [adv, setAdv] = useState(false)
+  const [confirmDel, setConfirmDel] = useState(false)
   const patch = (p: Partial<EditableChore>) => {
     const next = { ...draft, ...p }
     setDraft(next)
@@ -63,79 +67,101 @@ function ChoreEditor({
   const pts = draft.effort + draft.aversion + draft.mentalLoad
 
   return (
-    <div className="editor">
-      <div className="editor-top">
-        <input
-          className="editor-emoji"
-          value={draft.emoji}
-          placeholder="🙂"
-          maxLength={2}
-          onChange={(e) => patch({ emoji: e.target.value })}
-          aria-label="Emoji"
-        />
-        <input
-          className="editor-name"
-          value={draft.name}
-          placeholder="What is the chore?"
-          onChange={(e) => patch({ name: e.target.value })}
-          aria-label="Chore name"
-        />
-      </div>
+    <div className="sheet-scrim" onClick={onClose}>
+      <div
+        className="sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label={draft.name || 'Chore'}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="grabber" aria-hidden="true" />
 
-      <Dial
-        label="Effort"
-        hint="physical drain"
-        value={draft.effort}
-        onChange={(v) => patch({ effort: v })}
-      />
-      <Dial
-        label="Aversion"
-        hint="how much you'd pay to avoid it"
-        value={draft.aversion}
-        onChange={(v) => patch({ aversion: v })}
-      />
-      <Dial
-        label="Mental load"
-        hint="does it announce itself, or must you remember?"
-        value={draft.mentalLoad}
-        onChange={(v) => patch({ mentalLoad: v })}
-      />
-
-      <div className="dial">
-        <div className="dial-head">
-          <span className="dial-label">How often</span>
-          <span className="dial-hint">a target, never a judgement</span>
+        <div className="editor-top">
+          <input
+            className="editor-emoji"
+            value={draft.emoji}
+            placeholder="🙂"
+            maxLength={2}
+            onChange={(e) => patch({ emoji: e.target.value })}
+            aria-label="Emoji"
+          />
+          <input
+            className="editor-name"
+            value={draft.name}
+            placeholder="What is the chore?"
+            onChange={(e) => patch({ name: e.target.value })}
+            aria-label="Chore name"
+          />
         </div>
-        <div className="target-grid">
-          {TARGETS.map((t) => (
-            <button
-              key={t.v}
-              className="seg"
-              data-on={draft.target === t.v}
-              aria-pressed={draft.target === t.v}
-              onClick={() => patch({ target: t.v })}
-            >
-              {t.label}
+
+        <Dial label="Effort" hint="physical drain" value={draft.effort} onChange={(v) => patch({ effort: v })} />
+        <Dial
+          label="Aversion"
+          hint="how much you'd pay to avoid it"
+          value={draft.aversion}
+          onChange={(v) => patch({ aversion: v })}
+        />
+        <Dial
+          label="Mental load"
+          hint="does it announce itself?"
+          value={draft.mentalLoad}
+          onChange={(v) => patch({ mentalLoad: v })}
+        />
+
+        {/* Frequency only feeds progress counters, so it does not deserve equal
+            billing with the three dials that actually decide the score. */}
+        <button className="advanced" aria-expanded={adv} onClick={() => setAdv((a) => !a)}>
+          Advanced — how often ({targetLabel(draft.target)})
+          <span className="caret" data-open={adv} />
+        </button>
+
+        {adv && (
+          <>
+            <div className="target-grid">
+              {TARGETS.map((t) => (
+                <button
+                  key={t.v}
+                  className="seg"
+                  data-on={draft.target === t.v}
+                  aria-pressed={draft.target === t.v}
+                  onClick={() => patch({ target: t.v })}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <p className="setup-hint">
+              A target, never a judgement — it only feeds the progress counters and the
+              weekly recap.
+            </p>
+          </>
+        )}
+
+        <div className="editor-foot">
+          <span className="editor-pts">{pts} points each time</span>
+          <div className="sync-actions">
+            <button className="ghost" onClick={() => api.move(draft.id, -1)} aria-label="Move up">
+              ↑
             </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="editor-foot">
-        <span className="editor-pts">{pts} points each time</span>
-        <div className="sync-actions">
-          <button className="ghost" onClick={() => api.move(draft.id, -1)} aria-label="Move up">
-            ↑
-          </button>
-          <button className="ghost" onClick={() => api.move(draft.id, 1)} aria-label="Move down">
-            ↓
-          </button>
-          <button className="ghost" onClick={() => api.remove(draft.id).then(onClose)}>
-            Delete
-          </button>
-          <button className="ghost" data-primary="true" onClick={onClose}>
-            Done
-          </button>
+            <button className="ghost" onClick={() => api.move(draft.id, 1)} aria-label="Move down">
+              ↓
+            </button>
+            <button
+              className="ghost"
+              data-danger={confirmDel}
+              onClick={() => {
+                if (!confirmDel) return setConfirmDel(true)
+                onDelete(draft)
+                onClose()
+              }}
+            >
+              {confirmDel ? 'Really delete?' : 'Delete'}
+            </button>
+            <button className="ghost" data-primary="true" onClick={onClose}>
+              Done
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -150,6 +176,9 @@ export default function Settings({
   onClose: () => void
 }) {
   const [editing, setEditing] = useState<string | null>(null)
+  // A chore carries its history. Deletion stays reversible until the snackbar
+  // expires, rather than being guarded by a dialog nobody reads.
+  const [deleted, setDeleted] = useState<EditableChore | null>(null)
   const [note, setNote] = useState<string | null>(null)
   const [theme, setThemeState] = useState<Theme>(readTheme)
   const setTheme = (t: Theme) => {
@@ -162,7 +191,9 @@ export default function Settings({
     <div className="settings">
       <header className="settings-head">
         <div>
-          <h1 className="settings-title">Chores &amp; scores</h1>
+          <h1 className="lede-title" style={{ fontSize: 28 }}>
+            What things <em>are worth.</em>
+          </h1>
           <p className="settings-sub">
             Change anything here and it changes on both phones. Scores apply to
             what you log from now on — nothing already logged is revalued.
@@ -186,19 +217,35 @@ export default function Settings({
 
             {list.map((c) =>
               editing === c.id ? (
-                <ChoreEditor key={c.id} chore={c} api={api} onClose={() => setEditing(null)} />
+                <ChoreEditor
+                  key={c.id}
+                  chore={c}
+                  api={api}
+                  onClose={() => setEditing(null)}
+                  onDelete={(x) => {
+                    api.remove(x.id)
+                    setDeleted(x)
+                    setTimeout(() => setDeleted((cur) => (cur?.id === x.id ? null : cur)), 6000)
+                  }}
+                />
               ) : (
-                <div className="set-row" key={c.id} data-off={!c.active}>
+                <div className="set-row glass" key={c.id} data-off={!c.active}>
                   <button className="set-hit" onClick={() => setEditing(c.id)}>
                     <span className="row-name">
                       {c.emoji && <span className="row-emoji">{c.emoji}</span>}
                       {c.name || 'Untitled chore'}
                     </span>
                     <span className="row-meta">
-                      <span className="row-pts">
-                        {c.effort + c.aversion + c.mentalLoad} pts
+                      <span className="weightbar" aria-hidden="true">
+                        <span
+                          style={{
+                            width: `${((c.effort + c.aversion + c.mentalLoad) / 15) * 100}%`,
+                          }}
+                        />
                       </span>
-                      <span className="row-target">{targetLabel(c.target)}</span>
+                      <span className="row-pts">
+                        {c.effort + c.aversion + c.mentalLoad} pts · {targetLabel(c.target)}
+                      </span>
                     </span>
                   </button>
                   <button
@@ -283,6 +330,24 @@ export default function Settings({
         </div>
         {note && <p className="sync-error">{note}</p>}
       </section>
+
+      {deleted && (
+        <div className="snack" role="status">
+          <span>Deleted &ldquo;{deleted.name || 'Untitled chore'}&rdquo;</span>
+          <button
+            className="ghost"
+            onClick={() => {
+              api.replaceAll([...api.chores, deleted])
+              setDeleted(null)
+            }}
+          >
+            Undo
+          </button>
+          <button className="ghost" onClick={() => setDeleted(null)} aria-label="Dismiss">
+            ✕
+          </button>
+        </div>
+      )}
 
       <footer className="footer">
         <p className="footer-note">

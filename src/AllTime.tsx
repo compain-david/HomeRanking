@@ -2,11 +2,7 @@ import { useState } from 'react'
 import type { History } from './useSync'
 import type { EditableChore } from './useChores'
 import { exportCsv } from './backup'
-
-const PEOPLE = [
-  { id: 'alix', name: 'Alix', varName: 'var(--alix)' },
-  { id: 'david', name: 'David', varName: 'var(--david)' },
-] as const
+import { milestonesOf } from './milestones'
 
 const fmtWeek = (iso: string) => {
   const d = new Date(iso + 'T00:00:00')
@@ -32,7 +28,27 @@ export default function AllTime({
   const heaviest = Math.max(totals.alix, totals.david, 1)
   const pctA = grand ? Math.round((totals.alix / grand) * 100) : 50
 
+  const rows = history?.rows ?? []
+  const dimOf = new Map(chores.map((c) => [c.id, c]))
+
+  // All-time Effort/Aversion/Mental per person, derived from each chore's
+  // current dimensions. Exact while scores are unchanged, approximate after a
+  // retune — better than inventing a breakdown the stored rows never carried.
+  const mix = { alix: { e: 0, a: 0, m: 0 }, david: { e: 0, a: 0, m: 0 } }
+  for (const r of rows) {
+    const c = dimOf.get(r.choreId)
+    if (!c) continue
+    mix[r.person].e += c.effort * r.count
+    mix[r.person].a += c.aversion * r.count
+    mix[r.person].m += c.mentalLoad * r.count
+  }
+  const mSum = mix.alix.m + mix.david.m
+  const mentalPctA = mSum ? Math.round((mix.alix.m / mSum) * 100) : null
+
   const past = (history?.weeks ?? []).filter((w) => w.week !== currentWeek)
+  const heaviestWeek = Math.max(...past.map((w) => w.alix + w.david), 1)
+  const milestones = milestonesOf(history?.weeks ?? [], totals, mentalPctA)
+
   const done = history?.perChore ?? {}
   const ranked = chores
     .map((c) => {
@@ -44,113 +60,175 @@ export default function AllTime({
 
   return (
     <div className="alltime">
-      <header className="settings-head">
-        <div>
-          <h1 className="settings-title">Since the beginning</h1>
-          <p className="settings-sub">
-            Every week you have logged, added up. The weekly view resets; this does not.
-          </p>
-        </div>
-        <button className="ghost" onClick={onClose}>
-          Done
+      <div className="hdr">
+        <span className="hdr-pill glass" style={{ justifyContent: 'center' }}>
+          Since the beginning
+        </span>
+        <button className="hdr-btn glass" onClick={onClose} aria-label="Back to this week">
+          <span aria-hidden="true">✕</span>
         </button>
-      </header>
+      </div>
 
-      <section className="compare">
-        <div className="compare-head">
-          <span className="split-title">Total load carried</span>
-          <span className="split-note">{grand} pts</span>
-        </div>
-        {PEOPLE.map((p) => (
-          <div
-            className="compare-row"
-            key={p.id}
-            style={{ '--who': p.varName } as React.CSSProperties}
-          >
-            <span className="compare-name">{p.name}</span>
-            <span className="compare-track">
-              <span
-                className="compare-bar"
-                style={{ width: `${(totals[p.id] / heaviest) * 100}%`, background: p.varName }}
-              />
+      <div className="lede">
+        <h1 className="lede-title">
+          Every week, <em>added up.</em>
+        </h1>
+      </div>
+
+      <section className="hero glass">
+        <div className="hero-totals">
+          <div className="hero-side" data-side="left">
+            <span className="hero-name">Alix</span>
+            <span className="hero-num" data-who="alix" style={{ fontSize: 44 }}>
+              {totals.alix}
             </span>
-            <span className="compare-total">{totals[p.id]}</span>
           </div>
-        ))}
+          <span className="hero-chip">
+            {!grand
+              ? 'nothing yet'
+              : Math.abs(pctA - 50) <= 10
+                ? 'even, all time'
+                : `${pctA > 50 ? 'Alix' : 'David'} ahead`}
+          </span>
+          <div className="hero-side" data-side="right">
+            <span className="hero-name">David</span>
+            <span className="hero-num" data-who="david" style={{ fontSize: 44 }}>
+              {totals.david}
+            </span>
+          </div>
+        </div>
+
         {grand > 0 && (
-          <p className="insight" data-flag={Math.abs(pctA - 50) > 10 ? 'warn' : 'calm'}>
-            {Math.abs(pctA - 50) <= 10
-              ? 'Across every week logged, the split has stayed close to even.'
-              : `Across every week logged, ${pctA > 50 ? 'Alix' : 'David'} has carried ${Math.max(pctA, 100 - pctA)}% of the load.`}
-          </p>
+          <>
+            <div className="mixlegend">
+              {(['e', 'a', 'm'] as const).map((k) => (
+                <span className="legend-item" key={k}>
+                  <span className="legend-swatch" data-dim={k} />
+                  {k === 'e' ? 'effort' : k === 'a' ? 'aversion' : 'mental'}
+                </span>
+              ))}
+            </div>
+
+            {(['alix', 'david'] as const).map((who) => {
+              const m = mix[who]
+              const sum = m.e + m.a + m.m || 1
+              const scale = (totals[who] / heaviest) * 100
+              return (
+                <div
+                  className="mixrow"
+                  key={who}
+                  style={{ '--who': `var(--${who})` } as React.CSSProperties}
+                >
+                  <span className="compare-name">{who === 'alix' ? 'Alix' : 'David'}</span>
+                  <span className="compare-track">
+                    <span className="compare-bar" style={{ width: `${scale}%` }}>
+                      {(['e', 'a', 'm'] as const).map((k) => (
+                        <span
+                          key={k}
+                          className="split-seg"
+                          data-dim={k}
+                          style={{ width: `${(m[k] / sum) * 100}%` }}
+                        />
+                      ))}
+                    </span>
+                  </span>
+                  <span className="mixlabel">
+                    E {Math.round((m.e / sum) * 100)}% · A {Math.round((m.a / sum) * 100)}% · M{' '}
+                    {Math.round((m.m / sum) * 100)}%
+                  </span>
+                </div>
+              )
+            })}
+
+            <p className="hero-insight" data-flag={mentalPctA !== null && Math.abs(mentalPctA - 50) >= 8 ? 'warn' : 'calm'}>
+              {mentalPctA === null
+                ? 'No mental load logged yet.'
+                : Math.abs(pctA - 50) <= 10 && Math.abs(mentalPctA - 50) >= 8
+                  ? `The totals have stayed even, but ${mentalPctA > 50 ? 'Alix' : 'David'} has carried ${Math.max(mentalPctA, 100 - mentalPctA)}% of the mental load all along.`
+                  : Math.abs(mentalPctA - 50) <= 8
+                    ? 'Mental load has stayed close to evenly shared.'
+                    : `${mentalPctA > 50 ? 'Alix' : 'David'} has carried ${Math.max(mentalPctA, 100 - mentalPctA)}% of the mental load.`}
+            </p>
+          </>
         )}
       </section>
 
+      <div className="sectionlabel">
+        <span>Together — milestones</span>
+      </div>
+      {milestones.map((ms) => (
+        <div className="msrow glass" key={ms.id} data-done={ms.achieved}>
+          <span className="msbadge" aria-hidden="true">
+            {ms.achieved ? '✓' : '·'}
+          </span>
+          <div className="msbody">
+            <span className="recap-card-title">{ms.title}</span>
+            <span className="recap-card-note">{ms.caption}</span>
+          </div>
+        </div>
+      ))}
+
       {past.length > 0 && (
-        <section className="settings-cat">
-          <div className="settings-cat-head">
-            <span className="cat-name">Week by week</span>
+        <>
+          <div className="sectionlabel" style={{ marginTop: 22 }}>
+            <span>Week by week</span>
+            <em>widths compare across weeks</em>
           </div>
           {past.map((w) => {
             const t = w.alix + w.david
             const a = t ? (w.alix / t) * 100 : 50
+            const lead = Math.round((Math.max(w.alix, w.david) / (t || 1)) * 100)
             return (
-              <div className="weekrow" key={w.week}>
-                <span className="weekrow-label">{fmtWeek(w.week)}</span>
-                <span className="weekrow-bar">
-                  <span className="weekrow-a" style={{ width: `${a}%` }} />
-                  <span className="weekrow-d" style={{ width: `${100 - a}%` }} />
+              <div className="wkcard glass" key={w.week}>
+                <div className="wkcard-top">
+                  <span className="wkcard-label">{fmtWeek(w.week)}</span>
+                  <span className="wkcard-total">{t} pts</span>
+                </div>
+                <span className="wkcard-track">
+                  <span className="wkcard-bar" style={{ width: `${(t / heaviestWeek) * 100}%` }}>
+                    <span className="weekrow-a" style={{ width: `${a}%` }} />
+                    <span className="weekrow-d" style={{ width: `${100 - a}%` }} />
+                  </span>
                 </span>
-                <span className="weekrow-total">{t}</span>
+                <span className="wkcard-verdict">
+                  {lead <= 55
+                    ? 'an even week'
+                    : `${w.alix > w.david ? 'Alix' : 'David'} carried ${lead}%`}
+                </span>
               </div>
             )
           })}
-        </section>
+        </>
       )}
 
       <JournalSection history={history} chores={chores} />
 
-      <section className="settings-cat">
-        <div className="settings-cat-head">
-          <span className="cat-name">Who has done what, how often</span>
-          <span className="tally-key">
-            <span className="tally-key-item" data-who="alix">Alix</span>
-            <span className="tally-key-item" data-who="david">David</span>
-          </span>
-        </div>
-        {ranked.length === 0 ? (
-          <p className="footer-note">Nothing logged yet.</p>
-        ) : (
-          ranked.map((c) => (
-            <div className="tallyrow" key={c.id}>
-              <span className="tallyrow-name">{c.name}</span>
-              <span className="tallyrow-split" aria-hidden="true">
-                <span className="tallyrow-a" style={{ width: `${(c.alix / c.times) * 100}%` }} />
-                <span className="tallyrow-d" style={{ width: `${(c.david / c.times) * 100}%` }} />
+      <div className="sectionlabel" style={{ marginTop: 22 }}>
+        <span>Who does what</span>
+        <em>Alix / David</em>
+      </div>
+      {ranked.length === 0 ? (
+        <p className="footer-note">Nothing logged yet.</p>
+      ) : (
+        ranked.map((c) => (
+          <div className="whorow" key={c.id}>
+            <span className="tallyrow-name">{c.name}</span>
+            <span className="tallyrow-split" aria-hidden="true">
+              <span className="tallyrow-a" style={{ width: `${(c.alix / c.times) * 100}%` }} />
+              <span className="tallyrow-d" style={{ width: `${(c.david / c.times) * 100}%` }} />
+            </span>
+            <span className="tallyrow-counts">
+              <span className="tallyrow-count" data-who="alix" data-zero={c.alix === 0}>
+                {c.alix}
               </span>
-              <span className="tallyrow-counts">
-                <span
-                  className="tallyrow-count"
-                  data-who="alix"
-                  data-zero={c.alix === 0}
-                  title={`Alix ${c.alix}`}
-                >
-                  {c.alix}
-                </span>
-                <span className="tallyrow-slash">/</span>
-                <span
-                  className="tallyrow-count"
-                  data-who="david"
-                  data-zero={c.david === 0}
-                  title={`David ${c.david}`}
-                >
-                  {c.david}
-                </span>
+              <span className="tallyrow-slash">/</span>
+              <span className="tallyrow-count" data-who="david" data-zero={c.david === 0}>
+                {c.david}
               </span>
-            </div>
-          ))
-        )}
-      </section>
+            </span>
+          </div>
+        ))
+      )}
     </div>
   )
 }

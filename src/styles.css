@@ -2494,3 +2494,246 @@ a.ghost {
 .errlog-line span {
   color: var(--muted);
 }
+
+/* ---------------- since the beginning, in Bloom ---------------- */
+
+.mixlegend {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 16px 0 10px;
+}
+
+.mixrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 0;
+}
+
+.mixlabel {
+  font-family: var(--data);
+  font-size: 10px;
+  color: var(--muted);
+  flex: none;
+  white-space: nowrap;
+}
+
+.mixrow .compare-track {
+  height: 14px;
+  border-radius: 7px;
+}
+
+.msrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  margin-bottom: 6px;
+}
+
+.msrow[data-done='false'] {
+  opacity: 0.45;
+}
+
+.msbadge {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  color: var(--ink);
+}
+
+.msrow[data-done='true'] .msbadge {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.msbody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wkcard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 13px 14px;
+  border-radius: var(--r-md);
+  margin-bottom: 6px;
+}
+
+.wkcard-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.wkcard-label {
+  font-size: 13px;
+}
+
+.wkcard-total {
+  font-family: var(--data);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* the track is full width; the bar inside is scaled against the heaviest week,
+   so two cards can be compared by length rather than only by their split */
+.wkcard-track {
+  display: block;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  overflow: hidden;
+}
+
+.wkcard-bar {
+  display: flex;
+  height: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: width 0.5s var(--ease-out);
+}
+
+.wkcard-verdict {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.whorow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+}
+
+.whorow .tallyrow-split {
+  width: 52px;
+}
+
+/* ---------------- chores & scores, in Bloom ---------------- */
+
+.weightbar {
+  display: inline-block;
+  width: 64px;
+  height: 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+  overflow: hidden;
+  flex: none;
+}
+
+.weightbar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--who);
+}
+
+/* ---- bottom sheet ---- */
+
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: color-mix(in srgb, var(--paper) 70%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 460px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--glass-line);
+  border-bottom: none;
+  border-radius: 36px 36px 0 0;
+  padding: 10px 18px calc(20px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  animation: sheetUp 0.45s var(--ease-out) backwards;
+}
+
+@keyframes sheetUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.grabber {
+  width: 38px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  align-self: center;
+  margin-bottom: 4px;
+  flex: none;
+}
+
+.advanced {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-align: left;
+}
+
+.ghost[data-danger='true'] {
+  color: var(--tilt);
+  border-color: var(--tilt);
+}
+
+/* ---- undo snackbar ---- */
+
+.snack {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 12.5px;
+  box-shadow: var(--shadow);
+  animation: rise 0.3s var(--ease-out) backwards;
+  max-width: calc(100% - 28px);
+}
+
+.snack .ghost {
+  color: var(--paper);
+  border-color: color-mix(in srgb, var(--paper) 35%, transparent);
+  min-height: 36px;
+}
