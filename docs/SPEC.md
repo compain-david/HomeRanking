@@ -181,8 +181,17 @@ gives the recap a genuinely useful line: *"dishes — target 7, logged 5."*
 
 ### Logging rules
 
-- **Multi-log.** Tap once to log; tap again to increment `count`. The cell
-  shows a count badge above 1. Long-press to undo.
+- **Multi-log.** Tap once to log; tap again to increment `count`. The row
+  shows a count badge above 1.
+- **Correcting a mis-tap** — three layers, because mistakes surface at three
+  different moments:
+  1. **Immediately** — an undo toast appears on every log (`+6 pts · Annuler`).
+     This catches the large majority of mis-taps, since that is when they are
+     noticed.
+  2. **Same week** — long-press the item to open a stepper (`− count +`) with
+     a delete. Past days in the current week stay editable, matching Ludus's
+     *"Modifier la journée d'hier"*.
+  3. **Older** — delete the entry from the Journal.
 - **Done together.** Both people tap it; each receives full points and the
   entries are tagged `was_together`. This does not distort the balance —
   adding equal points to both leaves the ratio unchanged — but it does inflate
@@ -203,20 +212,27 @@ deleted.
 
 | Screen | Purpose | Notes |
 |---|---|---|
-| **The Week** (home) | The daily loop. A chore × day grid, one tap per cell to log. Beam at top, streak visible. | The screen that must be beautiful and fast. Everything else is secondary. |
-| **Balance** | The live beam, split by person *and by dimension* (E / A / M). | Where the mental-load insight lives. |
+| **Today** (home) | **One tab per person.** Your own chore list, grouped into collapsible categories with `0/4`-style counters, one tap to log. Big daily point total at the top. | The screen that must be beautiful and fast. Everything else is secondary. |
+| **Balance** (summary) | The live beam, the week's ranking, split by person *and by dimension* (E / A / M). | Where the mental-load insight lives, and where the two tabs are compared. |
 | **Journal** | Chronological log of every entry: date, person, chore, points. Searchable, exportable. | Builds trust — the numbers are auditable rather than asserted. Adapted from the reference app. |
 | **Week recap** | Sunday summary, verdict, target-vs-logged, one suggestion, streak resolution, reset. | The emotional payoff of the week. |
 | **Tune** (settings) | Add / edit / deactivate / reorder chores, set E/A/M via S/M/L, set target, emoji and time estimate. Rewards catalogue. Export / import. | Designed to be used *together*, occasionally. Adding a chore must take under ~15 seconds: name, emoji, category, three taps, target. Unused chores are **deactivated, not deleted**, so they stop distorting totals without losing history. |
 | **Setup** | Create household, invite partner, pick colours/avatars. | One-time. |
 
-### The Week grid
+### Today: one tab per person
 
-Rows are chores (grouped by category), columns are Mon–Sun, matching the
-reference app's routine grid. Because each person is signed in, **tapping a
-cell logs *you*** — no picker, no ambiguity, one tap. Tap again to increment
-for a multi-log chore. Today's column is highlighted; past days stay editable
-within the current week.
+Each person gets their own tab and taps their own list, so there is no picker
+and no ambiguity about who did what. Structure follows Ludus's *Aujourd'hui*:
+
+- **Big daily point total** at the top — the single most motivating element.
+- **Collapsible category sections** with `0/4`-style progress counters.
+  Essential once the list passes ~30 chores.
+- **Edit yesterday**, and any day in the current week.
+
+**Trade-off accepted:** a single shared chore × day grid would show the whole
+week's distribution at a glance — a colour pattern you could read without
+numbers. Per-person tabs lose that. The Balance screen has to earn it back,
+which is reasonable since the beam and E/A/M split already live there.
 
 ## 7. Gamification
 
@@ -272,6 +288,29 @@ so some of its best-looking features are actively wrong here.
 | "Valider la journée / la semaine" | Validation means one person approves another's work. Between adults that is supervision, and it converts a shared tool into a power dynamic. **Logging is self-reported, full stop.** |
 | Punishments catalogue (XS/S/M/L durations) | Correct for a 3-year-old drawing on the walls. Between partners, a system that assigns penalties is the single fastest way to make the app a weapon. |
 | Per-child star balances as private currency | Reinforces "my points vs. yours" — the exact ledger dynamic §2 exists to prevent. |
+
+### Second reference: Ludus (habit tracker with leagues)
+
+**Adopt:** big daily point total; collapsible category sections with `0/4`
+counters; edit-yesterday; a Stats screen.
+
+**Reject — "ÉCARTS" (negative points, capped at −15/day).** Ludus is a *solo*
+self-improvement app, so deducting 10 points for alcohol is self-directed and
+harmless. Between partners, a control that subtracts points from the other
+person is a weapon. This is the third instance of the same underlying pattern
+(validation, punishments, penalties): each is fine in an app with one user or
+an authority relationship, and each fails in a peer relationship.
+
+**Ranking — adopted, with the headline reserved for balance.** The household
+wants a ranking and the project is named for it. A two-person ranking is the
+beam with a winner named, so: the balance is the headline, the ranking sits
+beneath it.
+
+**League of households (v2, proposed).** Ludus's league uses an invite code. A
+league of two people is zero-sum, but a league of *households* is not: Alix and
+David as one team, competing with friends' households on total load cleared per
+month. This preserves "the opponent is the housework, not your partner" while
+adding real competitive pull, and pairs naturally with the shareable demo link.
 
 ## 8. Design direction
 
@@ -356,16 +395,21 @@ never guilt.
 - ~~Frequency as multiplier~~ → becomes `weekly_target`; actual load is logged.
 - ~~Adding missing chores~~ → yes, via the Tune/settings screen, under ~15s.
 
+- ~~Alix's rules~~ → **there is no pre-existing rule set.** Sensible defaults
+  plus easy editing in settings is the agreed approach; she shapes the scores
+  by using the app rather than by specifying it up front.
+- ~~Weekly reset day~~ → **Sunday**.
+- ~~Two people in one grid~~ → **one tab per person**, plus a shared Balance
+  and summary screen.
+- ~~Correcting a mis-tap~~ → undo toast, long-press stepper, Journal delete.
+
 **Open:**
 
-1. **⚠️ Alix's rules — blocking, and not yet available.** They have been
-   referenced but never shared into the project. They must be reconciled into
-   the seed data before Phase 1, and where they disagree with these defaults,
-   hers win. *Nothing here should be treated as reflecting her rules until she
-   has actually reviewed it.*
-2. Weekly reset day — Sunday evening assumed.
+1. Final chore list — pending review; David to add and remove.
+2. Weekly targets per chore (how many nights cooking, etc.).
 3. Should wedding logistics live in this app (30 pts/wk, 4th heaviest item) or
    be a separate project with its own end date?
 4. Which chores need `fixed_window` (a real deadline) versus merely being
    scheduled?
 5. What goes in the rewards catalogue, and at what point costs?
+6. League of households — v2, worth building?
