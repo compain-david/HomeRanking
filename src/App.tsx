@@ -687,6 +687,7 @@ export default function App() {
 function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [code, setCode] = useState('')
   const connected = !!sync.household
 
   const label = connected
@@ -759,6 +760,28 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
                   {sync.bootstrapping ? 'Trying…' : 'Try again'}
                 </button>
               </div>
+
+              {/* A device that loses its storage has no share link to hand.
+                  Typing the code is the way back in. */}
+              <div className="sync-join">
+                <input
+                  className="sync-input"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="Or type your code"
+                  aria-label="Household code"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                />
+                <button
+                  className="ghost"
+                  onClick={() => sync.join(code)}
+                  disabled={code.trim().length < 4}
+                >
+                  Join
+                </button>
+              </div>
+
               <SetupGuide />
             </>
           )}

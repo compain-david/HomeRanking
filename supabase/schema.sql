@@ -152,11 +152,11 @@ begin
     raise exception 'not signed in';
   end if;
 
-  -- 8 chars from an alphabet with no 0/O/1/I, so a code can be read aloud
+  -- 8 hex characters from gen_random_uuid(), which core Postgres provides.
+  -- The previous version used gen_random_bytes() from pgcrypto, an extension
+  -- Supabase does not enable by default, so this raised on every call.
   loop
-    v_code := upper(
-      translate(substr(encode(gen_random_bytes(8), 'base64'), 1, 8), '+/=OI01lo', 'XYZWJKMNP')
-    );
+    v_code := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
     exit when not exists (select 1 from households h where h.invite_code = v_code);
   end loop;
 
