@@ -1,8 +1,8 @@
 # Chore table & grading criteria
 
-Seed data for HomeRanking. Every score here is a **starting point**, not a
-verdict — the app must make retuning easy, and this household's own judgement
-overrides these defaults.
+Seed data for HomeRanking, rebuilt from David's review. **Scores below are
+defaults only** — Alix and David will set E/A/M themselves in the settings
+screen, and their values override everything here.
 
 ---
 
@@ -12,8 +12,8 @@ Three independent dimensions, each 1–5. Collected in the UI as **S / M / L**
 (= 1 / 3 / 5), with 2 and 4 available when a chore sits between anchors.
 
 ```
-points per session = Effort + Aversion + Mental load     (range 3–15)
-weekly load        = points per session × times per week
+points per completion = Effort + Aversion + Mental load     (range 3–15)
+weekly load           = points × times logged that week
 ```
 
 ### Effort (E) — physical and time drain per session
@@ -36,10 +36,8 @@ weekly load        = points per session × times per week
 | **4** | Actively disliked, reliably procrastinated |
 | **5** (L) | Grim — gross, or dread-inducing |
 
-Aversion is the most **personal** dimension — if one of you finds cooking
-relaxing and the other finds it stressful, the "true" score differs by person.
-**Decided: one shared score per chore anyway**, for simplicity of setup and
-use. Agree it together. Revisit only if it visibly misrepresents one of you.
+Aversion is the most personal dimension. **Decided: one shared score per chore
+anyway**, agreed between you, for simplicity.
 
 ### Mental load (M) — planning, remembering, deciding, coordinating
 
@@ -52,164 +50,172 @@ use. Agree it together. Revisit only if it visibly misrepresents one of you.
 | **5** (L) | Carried continuously; involves other people or deadlines |
 
 > **The cue test.** *Does the task announce itself?* Dirty dishes are visible —
-> M1. Nobody can see that the car service is due in three weeks — M5. This is
-> an observable property of the task, not a feeling, which is what makes it
+> M1. Nobody can see that the robot needs new brushes — M5. This is an
+> observable property of the task, not a feeling, which is what makes it
 > possible for two people to agree on a score.
 
 ### What is deliberately NOT used as the weight
 
-- **Time in minutes.** It punishes efficiency (get faster, score less), it
-  treats 20 minutes of scrubbing a toilet as equal to 20 minutes of folding
-  laundry in front of the TV, and — fatally — mental load has no duration, so
-  a time-based system scores the invisible work at zero.
-- **A single S/M/L "size".** Collapses three independent things into one
-  number, and mental load is what disappears in the collapse.
-
-Time estimates are still shown per chore as **metadata**, to keep the numbers
-grounded and sanity-checkable. They never drive the score.
+- **Time in minutes** — punishes efficiency, ignores aversion, and scores
+  mental load at zero. Kept as displayed metadata only.
+- **A single S/M/L "size"** — collapses three independent things into one, and
+  mental load is what disappears.
 
 ---
 
 ## 2. The table
 
-`freq` = times per week. `pts` = E+A+M per session. `wk` = pts × freq.
+`t` = weekly target (an expectation for the recap, **not** a multiplier).
+`pts` = points per completion.
 
 ### Kitchen & food
 
-| Chore | E | A | M | pts | ≈time | freq | wk |
-|---|:-:|:-:|:-:|:-:|---|:-:|:-:|
-| Wash dishes / load & empty dishwasher | 3 | 2 | 1 | **6** | 20 min | 7 | 42.0 |
-| Wipe counters & stovetop | 1 | 1 | 1 | **3** | 3 min | 7 | 21.0 |
-| Cook dinner | 3 | 1 | 3 | **7** | 40 min | 5 | 35.0 |
-| Meal planning & grocery list | 1 | 1 | 5 | **7** | 15 min | 1 | 7.0 |
-| Grocery shopping | 3 | 2 | 2 | **7** | 50 min | 1 | 7.0 |
-| Unpack & put away shopping | 2 | 2 | 1 | **5** | 15 min | 1 | 5.0 |
-| Clean fridge & sort leftovers | 2 | 3 | 2 | **7** | 20 min | 0.5 | 3.5 |
-| Deep clean oven | 4 | 4 | 1 | **9** | 60 min | 0.25 | 2.25 |
+| Chore | E | A | M | pts | t |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Put dishes in the dishwasher | 2 | 2 | 1 | **5** | 7 |
+| Launch the dishwasher | 1 | 1 | 2 | **4** | 5 |
+| Empty the dishwasher | 2 | 3 | 1 | **6** | 5 |
+| Wipe counters & stovetop | 1 | 1 | 1 | **3** | 7 |
+| Cook dinner | 3 | 1 | 3 | **7** | 5 |
+| Meal planning & grocery list | 1 | 1 | 5 | **7** | 1 |
+| Grocery shopping | 3 | 2 | 2 | **7** | 1 |
+| Unpack & put away shopping | 2 | 2 | 1 | **5** | 1 |
+| Clean fridge & sort leftovers | 2 | 3 | 2 | **7** | 0.5 |
+| Deep clean oven | 4 | 4 | 1 | **9** | 0.25 |
+| Vacuum the sofa | 2 | 2 | 2 | **6** | 0.5 |
+| Vacuum the chairs | 2 | 2 | 2 | **6** | 0.5 |
 
 ### Bathroom
 
-| Chore | E | A | M | pts | ≈time | freq | wk |
-|---|:-:|:-:|:-:|:-:|---|:-:|:-:|
-| Clean toilet | 2 | 5 | 1 | **8** | 10 min | 1 | 8.0 |
-| Clean shower & bath | 3 | 3 | 1 | **7** | 20 min | 1 | 7.0 |
-| Wipe sink & mirror | 1 | 1 | 1 | **3** | 5 min | 1 | 3.0 |
-| Notice & restock loo roll / soap | 1 | 1 | 4 | **6** | 5 min | 1 | 6.0 |
-| Clear drain / plughole | 2 | 5 | 2 | **9** | 10 min | 0.25 | 2.25 |
+| Chore | E | A | M | pts | t |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Clean toilet | 2 | 5 | 1 | **8** | 1 |
+| Wipe sink & mirror | 1 | 1 | 1 | **3** | 1 |
+| Notice & restock loo roll / soap | 1 | 1 | 4 | **6** | 1 |
 
 ### Laundry & clothes
 
-| Chore | E | A | M | pts | ≈time | freq | wk |
-|---|:-:|:-:|:-:|:-:|---|:-:|:-:|
-| Wash & dry a load | 2 | 1 | 2 | **5** | 10 min | 3 | 15.0 |
-| Fold & put away | 2 | 3 | 1 | **6** | 20 min | 3 | 18.0 |
-| Ironing | 3 | 4 | 1 | **8** | 30 min | 1 | 8.0 |
-| Change bed sheets | 3 | 2 | 3 | **8** | 15 min | 0.5 | 4.0 |
-| Dry cleaning, repairs, seasonal swap | 1 | 2 | 4 | **7** | 20 min | 0.1 | 0.7 |
+| Chore | E | A | M | pts | t |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Launch a laundry load | 1 | 1 | 3 | **5** | 3 |
+| Unload & hang on the étendoir | 2 | 3 | 2 | **7** | 3 |
+| Fold & put away | 2 | 3 | 1 | **6** | 3 |
+| Put out the bed sheets for the cleaner | 1 | 1 | 3 | **5** | 0.5 |
 
 ### Floors & surfaces
 
-| Chore | E | A | M | pts | ≈time | freq | wk |
-|---|:-:|:-:|:-:|:-:|---|:-:|:-:|
-| Vacuum | 3 | 1 | 1 | **5** | 25 min | 2 | 10.0 |
-| Mop | 3 | 2 | 2 | **7** | 25 min | 1 | 7.0 |
-| Dust surfaces | 2 | 2 | 2 | **6** | 20 min | 1 | 6.0 |
-| Tidy & declutter shared spaces | 2 | 2 | 3 | **7** | 10 min | 5 | 35.0 |
-| Clean windows | 3 | 2 | 1 | **6** | 45 min | 0.1 | 0.6 |
+| Chore | E | A | M | pts | t |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Prepare the house for the robot | 2 | 2 | 3 | **7** | 3 |
+| Launch the robot vacuum | 1 | 1 | 2 | **4** | 3 |
+| Empty & clean the robot | 1 | 4 | 3 | **8** | 1 |
+| Buy replacement parts for the robot | 1 | 1 | 5 | **7** | 0.1 |
 
 ### Bins & recycling
 
-| Chore | E | A | M | pts | ≈time | freq | wk |
-|---|:-:|:-:|:-:|:-:|---|:-:|:-:|
-| Rubbish out on collection day | 2 | 3 | 4 | **9** | 5 min | 1 | 9.0 |
-| Sort & take out recycling | 2 | 2 | 3 | **7** | 10 min | 1 | 7.0 |
-| Replace bags & clean the bin | 1 | 4 | 2 | **7** | 10 min | 0.5 | 3.5 |
-
-> "Rubbish out" scores 9 on a 5-minute task. That is the model working: the
-> effort is trivial, but it has a hard deadline, no cue, and a week-long
-> consequence for missing it. Whoever holds that reminder is doing real work.
+| Chore | E | A | M | pts | t |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Bring the bins in from the box | 2 | 2 | 3 | **7** | 1 |
+| Take the rubbish out to the bins | 2 | 3 | 3 | **8** | 2 |
+| Take the cardboard out to the bins | 2 | 2 | 3 | **7** | 1 |
+| Replace the bin bags | 1 | 3 | 2 | **6** | 0.5 |
+| Clean the bin | 2 | 5 | 2 | **9** | 0.25 |
 
 ### Admin & mental load
 
-| Chore | E | A | M | pts | ≈time | freq | wk |
-|---|:-:|:-:|:-:|:-:|---|:-:|:-:|
-| Pay bills & manage budget | 1 | 3 | 5 | **9** | 30 min | 1 | 9.0 |
-| Book & track appointments | 1 | 2 | 5 | **8** | 15 min | 1 | 8.0 |
-| Birthdays, gifts & social calendar | 2 | 1 | 5 | **8** | 20 min | 1 | 8.0 |
-| Track household supplies running low | 1 | 1 | 5 | **7** | — | 1 | 7.0 |
-| Insurance, renewals, paperwork | 1 | 4 | 5 | **10** | 45 min | 0.25 | 2.5 |
-| Coordinate repairs & tradespeople | 2 | 4 | 5 | **11** | 60 min | 0.1 | 1.1 |
-| Wedding logistics & coordination | 3 | 2 | 5 | **10** | 90 min | 3 | 30.0 |
+| Chore | E | A | M | pts | t |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Collect the post | 1 | 1 | 3 | **5** | 3 |
+| Pay bills & manage budget | 1 | 3 | 5 | **9** | 1 |
+| Work on investments | 2 | 2 | 5 | **9** | 1 |
+| Manage the cleaner — payment & schedule | 1 | 2 | 5 | **8** | 0.5 |
+| Book & track appointments | 1 | 2 | 5 | **8** | 1 |
+| Birthdays, gifts & social calendar | 2 | 1 | 5 | **8** | 1 |
+| Track household supplies running low | 1 | 1 | 5 | **7** | 1 |
+| Insurance, renewals, paperwork | 1 | 4 | 5 | **10** | 0.25 |
+| Coordinate repairs & tradespeople | 2 | 4 | 5 | **11** | 0.1 |
+| Wedding logistics & coordination | 3 | 2 | 5 | **10** | 3 |
 
 ### Outdoor & occasional
 
-| Chore | E | A | M | pts | ≈time | freq | wk |
-|---|:-:|:-:|:-:|:-:|---|:-:|:-:|
-| Water plants | 1 | 1 | 2 | **4** | 5 min | 3 | 12.0 |
-| Mow lawn / garden tidy | 4 | 2 | 2 | **8** | 60 min | 0.5 | 4.0 |
-| Car maintenance, service, admin | 2 | 3 | 5 | **10** | 60 min | 0.1 | 1.0 |
-| Wash the car | 3 | 2 | 1 | **6** | 40 min | 0.25 | 1.5 |
-| Declutter / reorganise a room | 4 | 2 | 3 | **9** | 2 hr | 0.1 | 0.9 |
+| Chore | E | A | M | pts | t |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Water plants | 1 | 1 | 2 | **4** | 3 |
+| Mow lawn / garden tidy | 4 | 2 | 2 | **8** | 0.5 |
+| Car maintenance, service, admin | 2 | 3 | 5 | **10** | 0.1 |
+| Wash the car | 3 | 2 | 1 | **6** | 0.25 |
+| Declutter / reorganise a room | 4 | 2 | 3 | **9** | 0.1 |
+
+**43 chores.**
 
 ---
 
-## 3. What the numbers say
+## 3. Removed in this revision
 
-**Total household load ≈ 358 points/week** (≈ 328 excluding wedding logistics).
+Deleted because a cleaner covers them, or because they were replaced by a more
+granular version:
 
-### Mental load is ~35% of the total
-
-Roughly **127 of those 358 points** come from the Mental load dimension —
-work that a conventional time-or-effort scoring system counts as zero. That
-figure alone justifies the three-dimension model.
-
-### The two rankings are almost completely different lists
-
-**Heaviest per session** — the grim, rare, heavy jobs:
-
-| # | Chore | pts |
-|---|---|---|
-| 1 | Coordinate repairs & tradespeople | 11 |
-| 2 | Insurance, renewals, paperwork | 10 |
-| 2 | Car maintenance, service, admin | 10 |
-| 2 | Wedding logistics | 10 |
-| 5 | Deep clean oven / Clear drain / Rubbish out / Bills / Declutter | 9 |
-
-**Heaviest per week** — the small, relentless, daily ones:
-
-| # | Chore | wk |
-|---|---|---|
-| 1 | Wash dishes | 42.0 |
-| 2 | Cook dinner | 35.0 |
-| 2 | Tidy & declutter shared spaces | 35.0 |
-| 4 | Wedding logistics | 30.0 |
-| 5 | Wipe counters & stovetop | 21.0 |
-
-Two things follow. First, **the top of the per-session list is dominated by
-invisible admin** — four of the top five are mental-load-heavy tasks that
-barely register as "chores" in most households. Second, **frequency changes
-everything**: wiping counters is the lowest-scoring task in the entire table
-at 3 points, and it still outranks deep-cleaning the oven by nearly 10× over a
-week. Any system that ignores frequency gets this exactly backwards.
-
-The app should show both rankings. They answer different questions: *"what's
-the worst job?"* and *"where does my week actually go?"*
+| Removed | Reason |
+|---|---|
+| Wash dishes / dishwasher | Split into put-in / launch / empty |
+| Clean shower & bath, Clear drain | Cleaner |
+| Wash & dry a load | Replaced by launch + étendoir (no dryer) |
+| Ironing, Dry cleaning & repairs | Cleaner / not applicable |
+| Change bed sheets | Replaced by "put out the sheets for the cleaner" |
+| Mop, Dust, Clean windows | Cleaner |
+| Tidy & declutter shared spaces | Removed on request — **see flag below** |
+| Vacuum | Replaced by the robot chores |
+| Rubbish out on collection day, Sort recycling | Replaced by granular bin chores |
 
 ---
 
-## 4. Open questions on this table
+## 4. What the revision changed
 
-1. **⚠️ Alix's existing rules — still the biggest gap, and still not shared.**
-   Every score in this table is a default written without sight of them. If
-   her rules disagree with anything above, hers win. **Nothing in this file
-   should be presented to her as reflecting her rules.**
-2. **`freq` here is now a weekly *target*, not a multiplier** (see SPEC §5).
-   The `wk` column is therefore an *expected* load used for planning and for
-   the recap's "target vs. logged" line — real weekly load comes from what
-   gets logged.
-3. **Targets are guesses.** Do you cook 5 nights or 6? Is the flat vacuumed
-   twice a week? These move the expected totals more than the scores do.
-4. **Missing chores** — this list is generic. What's specific to your home
-   that isn't here? Add them in the Tune screen.
-5. **Chores that don't apply** — lawn, car — should be deactivated rather than
-   scored, so they don't distort the totals.
+### Outsourcing cleaning removed effort, not mental load
+
+Expected weekly load ≈ **435 points**, split by dimension:
+
+| Dimension | Points | Share |
+|---|:-:|:-:|
+| Effort | 126 | 29% |
+| Aversion | 135 | 31% |
+| **Mental load** | **174** | **40%** |
+
+**Mental load rose from ~35% to 40%, and is now the single largest dimension —
+larger than physical effort.** Bringing in a cleaner deleted eight physical
+chores, but every admin task survived, and managing the cleaner (payment,
+scheduling, prepping sheets) *added* new mental load.
+
+This is the pattern worth knowing: **you can outsource effort, but the
+noticing, remembering and coordinating stays with you.** A system scoring only
+physical work would show this household getting dramatically lighter. It
+didn't — it got proportionally more mental.
+
+### The robot vacuum illustrates the model
+
+"Buy replacement parts for the robot" scores **7 points on essentially zero
+physical effort** — nobody sees the brushes wearing out, there's no cue, and
+if it isn't tracked the robot degrades. Pure invisible work, correctly priced.
+
+---
+
+## 5. Flags & open questions
+
+1. **⚠️ Tidying was deleted, and it was joint-second heaviest** (35 pts/wk).
+   A cleaner *cleans* — she generally doesn't put your belongings away. If
+   tidying still happens, deleting it removes one of the largest real loads
+   from view, which is exactly the failure mode this app exists to prevent.
+   Confirm: genuinely not happening, or invisible-but-real?
+2. **⚠️ Bin-day tracking disappeared.** The old "rubbish out on collection
+   day" scored 9 mostly on mental load — a hard deadline with no cue. The new
+   bin chores are the physical act only. Does someone still have to remember
+   collection day and get the bins to the street? If so it needs its own entry.
+3. **Three readings to confirm** — "remove dish from dishwasher" read as
+   *empty the dishwasher* (not "delete"); "remove and put the laundry on the
+   étendoir" read as *unload and hang*; **"remove bins from the box"** read as
+   *bring the bins in from their outdoor box* — least confident of the three.
+4. **How often does the cleaner come?** Drives targets for the sheets and
+   payment chores, and may remove more entries.
+5. **Toilet, sink and counters** were kept — does the cleaner do these too?
+6. **Garden and car were kept** ("Outdoor — perfect"), so confirming: you do
+   have both?

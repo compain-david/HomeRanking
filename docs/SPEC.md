@@ -219,6 +219,47 @@ deleted.
 | **Tune** (settings) | Add / edit / deactivate / reorder chores, set E/A/M via S/M/L, set target, emoji and time estimate. Rewards catalogue. Export / import. | Designed to be used *together*, occasionally. Adding a chore must take under ~15 seconds: name, emoji, category, three taps, target. Unused chores are **deactivated, not deleted**, so they stop distorting totals without losing history. |
 | **Setup** | Create household, invite partner, pick colours/avatars. | One-time. |
 
+### Logging model: weekly counters, not a daily grid
+
+**Decided:** logging is by **weekly counter per chore**, not per day. Each
+chore is one row with a stepper (`− 3 +`) and the week's points beside it. You
+bump the count whenever you like — during the week, or in one sweep on Sunday.
+
+Options considered, scored against the requirement (weekly vision, no daily
+obligation, a missed day is not a failure, ranking updates automatically, no
+validation step):
+
+| | A. Daily grid | B. Weekly counters | C. Weekly checklist | **D. Counters + silent timestamp** |
+|---|:-:|:-:|:-:|:-:|
+| Catch up after missing days | 4 | 10 | 10 | **10** |
+| Speed to log | 6 | 9 | 10 | **9** |
+| Accuracy of the data | 9 | 7 | 4 | **8** |
+| Guilt-free (no empty cells) | 3 | 9 | 9 | **9** |
+| Keeps Journal & stats useful | 9 | 5 | 3 | **9** |
+| Build cost | med | low | low | **low** |
+| **Total** | 31 | 40 | 36 | **45** |
+
+**C is disqualified regardless of score:** a binary "did I do this?" destroys
+frequency, and frequency is the model. Washing up once and washing up seven
+times would score identically.
+
+**D is chosen.** The counter is what the user sees; the app records the
+timestamp silently so the Journal and stats stay rich, without ever asking
+which day something happened or showing an empty cell.
+
+**Consequences:**
+- "Today" becomes **"This week"**; the big number is a weekly total; the
+  `0/4` progress counters become `3 / 7` against target.
+- **The stepper replaces the whole undo mechanism.** Mis-tapped? Press `−`.
+  No toast, no long-press, no Journal dive.
+- Points push straight to the ranking — **no validation step**, consistent
+  with §7b.
+
+**Known downside, accepted:** counters rely on memory, and one-sweep Sunday
+logging systematically under-reports. Mitigated by the counter being available
+all week, and by the fact that under-reporting affects both people, so the
+*balance* stays roughly honest even when totals sag.
+
 ### Today: one tab per person
 
 Each person gets their own tab and taps their own list, so there is no picker
