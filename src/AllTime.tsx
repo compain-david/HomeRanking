@@ -156,9 +156,9 @@ export default function AllTime({
 }
 
 /**
- * The counters are weekly, not timestamped, so this cannot pretend to be a
- * minute-by-minute feed. It is the honest thing instead: every entry, newest
- * week first, exactly as stored.
+ * Grouped by week rather than a flat list. A journal of individual rows makes
+ * you reconstruct the week in your head; the week is the unit the app actually
+ * thinks in, so it is the unit worth reading.
  */
 function JournalSection({
   history,
@@ -167,14 +167,33 @@ function JournalSection({
   history: History | null
   chores: EditableChore[]
 }) {
-  const [expanded, setExpanded] = useState(false)
-  const rows = (history?.rows ?? [])
-    .slice()
-    .sort((a, b) => b.week.localeCompare(a.week) || b.count - a.count)
+  const [open, setOpen] = useState<string | null>(null)
+  const rows = history?.rows ?? []
   if (!rows.length) return null
 
   const nameOf = new Map(chores.map((c) => [c.id, c.name]))
-  const shown = expanded ? rows : rows.slice(0, 8)
+
+  const weeks = new Map<
+    string,
+    { alix: number; david: number; items: { name: string; person: string; count: number; pts: number }[] }
+  >()
+  for (const r of rows) {
+    if (!r.count) continue
+    const w = weeks.get(r.week) ?? { alix: 0, david: 0, items: [] }
+    const pts = r.count * r.points
+    w[r.person] += pts
+    w.items.push({
+      name: nameOf.get(r.choreId) ?? r.choreId,
+      person: r.person,
+      count: r.count,
+      pts,
+    })
+    weeks.set(r.week, w)
+  }
+
+  const ordered = [...weeks.entries()].sort((a, b) => b[0].localeCompare(a[0]))
+  // newest week starts open — it is the one you came to look at
+  const current = open ?? ordered[0]?.[0]
 
   return (
     <section className="settings-cat">
@@ -189,24 +208,45 @@ function JournalSection({
         </button>
       </div>
 
-      {shown.map((r, i) => (
-        <div className="journalrow" key={`${r.week}-${r.person}-${r.choreId}-${i}`}>
-          <span className="journalrow-week">{r.week.slice(5)}</span>
-          <span className="journalrow-who" data-who={r.person}>
-            {r.person === 'alix' ? 'Alix' : 'David'}
-          </span>
-          <span className="journalrow-name">{nameOf.get(r.choreId) ?? r.choreId}</span>
-          <span className="journalrow-count">
-            {r.count}× · {r.count * r.points}
-          </span>
-        </div>
-      ))}
+      {ordered.map(([week, w]) => {
+        const isOpen = current === week
+        const total = w.alix + w.david
+        return (
+          <div className="jweek" key={week}>
+            <button
+              className="jweek-head"
+              aria-expanded={isOpen}
+              onClick={() => setOpen(isOpen ? '' : week)}
+            >
+              <span className="jweek-label">{fmtWeek(week)}</span>
+              <span className="jweek-split">
+                <span style={{ color: 'var(--alix)' }}>{w.alix}</span>
+                <span className="tallyrow-slash">/</span>
+                <span style={{ color: 'var(--david)' }}>{w.david}</span>
+              </span>
+              <span className="jweek-total">{total} pts</span>
+              <span className="caret" data-open={isOpen} />
+            </button>
 
-      {rows.length > 8 && (
-        <button className="add-chore" onClick={() => setExpanded((e) => !e)}>
-          {expanded ? 'Show less' : `Show all ${rows.length} entries`}
-        </button>
-      )}
+            {isOpen && (
+              <div className="jweek-body">
+                {w.items
+                  .sort((a, b) => b.pts - a.pts)
+                  .map((it, i) => (
+                    <div className="jitem" key={`${week}-${it.name}-${it.person}-${i}`}>
+                      <span className="jitem-who" data-who={it.person}>
+                        {it.person === 'alix' ? 'A' : 'D'}
+                      </span>
+                      <span className="journalrow-name">{it.name}</span>
+                      <span className="jitem-count">×{it.count}</span>
+                      <span className="jitem-pts">{it.pts}</span>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </section>
   )
 }

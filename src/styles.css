@@ -2300,3 +2300,105 @@ a.ghost {
 .lookagain:hover {
   color: var(--ink);
 }
+
+/* ---------------- journal, by week ---------------- */
+
+.jweek {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin-bottom: 6px;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.jweek-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 13px;
+  text-align: left;
+}
+
+.jweek-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.jweek-split {
+  font-family: var(--data);
+  font-size: 13px;
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.jweek-total {
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--faint);
+  flex: none;
+  white-space: nowrap;
+}
+
+.jweek-body {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.jitem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  font-size: 12.5px;
+}
+
+.jitem + .jitem {
+  border-top: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+}
+
+.jitem-who {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--data);
+  font-size: 9.5px;
+  color: var(--card);
+}
+
+.jitem-who[data-who='alix'] {
+  background: var(--alix);
+}
+
+.jitem-who[data-who='david'] {
+  background: var(--david);
+}
+
+.jitem-count,
+.jitem-pts {
+  font-family: var(--data);
+  font-size: 11.5px;
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.jitem-count {
+  color: var(--faint);
+}
+
+.jitem-pts {
+  color: var(--muted);
+  min-width: 26px;
+  text-align: right;
+}
+
+/* the header pill was the last control under the 44px minimum */
+.hdr-pill {
+  min-height: 44px;
+}
