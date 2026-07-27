@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ALL_CHORES, CATEGORIES, points, type Chore } from './data/chores'
+import { points, type Chore } from './data/chores'
 import { daysLeft, weekKey, weekLabel } from './week'
 import { EMPTY_COUNTS, useSync, type Counts, type PersonId } from './useSync'
 import SCHEMA_SQL from '../supabase/schema.sql?raw'
+import Settings from './Settings'
+import { CATEGORY_EMOJI, CATEGORY_NAMES, useChores } from './useChores'
 
 const PROJECT = 'jasildjjlncoriepjosp'
 const SQL_EDITOR = `https://supabase.com/dashboard/project/${PROJECT}/sql/new`
@@ -140,7 +142,7 @@ export default function App() {
   const [counts, setCounts] = useState<Counts>(() => loadCounts(wk))
   const [who, setWho] = useState<PersonId>('alix')
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(CATEGORIES.map((c, i) => [c.name, i === 0])),
+    Object.fromEntries(CATEGORY_NAMES.map((n, i) => [n, i === 0])),
   )
   const [compact, setCompact] = useState(false)
   // clearing is reversible rather than confirmed: a dialog interrupts, an undo
@@ -158,6 +160,21 @@ export default function App() {
   }, [counts, wk])
 
   const sync = useSync(wk, counts, setCounts)
+  const choreApi = useChores(sync.household?.id ?? null)
+  const [showSettings, setShowSettings] = useState(false)
+
+  // only chores that are switched on, grouped the way the list is drawn
+  const groups = useMemo(
+    () =>
+      CATEGORY_NAMES.map((name) => ({
+        name,
+        emoji: CATEGORY_EMOJI[name],
+        chores: choreApi.chores
+          .filter((c) => c.category === name && c.active && c.name.trim())
+          .sort((a, b) => a.sortOrder - b.sortOrder),
+      })).filter((g) => g.chores.length),
+    [choreApi.chores],
+  )
 
   const bump = useCallback(
     (person: PersonId, choreId: string, delta: number) => {
@@ -178,7 +195,7 @@ export default function App() {
       let a = 0
       let m = 0
       let done = 0
-      for (const c of ALL_CHORES) {
+      for (const c of choreApi.chores) {
         const n = counts[person][c.id] ?? 0
         if (!n) continue
         done += n
@@ -190,7 +207,7 @@ export default function App() {
       return { total, e, a, m, done }
     }
     return { alix: of('alix'), david: of('david') }
-  }, [counts])
+  }, [counts, choreApi.chores])
 
   const active = totals[who]
   const assigned = totals.alix.total + totals.david.total
@@ -243,6 +260,14 @@ export default function App() {
           }
         : { flag: 'calm', text: 'Mental load is split fairly evenly this week.' }
 
+  if (showSettings) {
+    return (
+      <div className="app" style={style}>
+        <Settings api={choreApi} onClose={() => setShowSettings(false)} />
+      </div>
+    )
+  }
+
   return (
     <div className="app" style={style}>
       <header className="panel" data-compact={compact}>
@@ -250,7 +275,16 @@ export default function App() {
           <div className="wordmark">
             Home<span>Ranking</span>
           </div>
-          <div className="weekstamp">{weekLabel()}</div>
+          <div className="mast-right">
+            <span className="weekstamp">{weekLabel()}</span>
+            <button
+              className="gear"
+              aria-label="Chores and scores"
+              onClick={() => setShowSettings(true)}
+            >
+              <span aria-hidden="true">⚙</span>
+            </button>
+          </div>
         </div>
 
         <SyncBar sync={sync} />
@@ -359,7 +393,7 @@ export default function App() {
         )}
       </section>
 
-      {CATEGORIES.map((cat) => {
+      {groups.map((cat) => {
         const logged = cat.chores.reduce((s, c) => s + (counts[who][c.id] ?? 0), 0)
         const target = cat.chores.reduce((s, c) => s + c.target, 0)
         const isOpen = open[cat.name]

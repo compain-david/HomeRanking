@@ -165,6 +165,12 @@ Achievement      id, household_id, person_id, kind, earned_at
 when logged. Retuning scores changes the future, never the past — otherwise
 last week's balance silently rewrites itself and the app loses trust.
 
+> **⚠️ Not yet implemented.** The shipped `entries` table stores a count only,
+> and totals are recalculated from the current chore scores. Editing a score
+> therefore also changes the current week's totals. That is harmless while only
+> the live week is shown, and becomes wrong the moment Phase 3 adds history —
+> so the snapshot column must land before, or with, the weekly recap.
+
 ### Scoring vs. metadata
 
 Only three fields drive points: `effort`, `aversion`, `mental_load`. Everything

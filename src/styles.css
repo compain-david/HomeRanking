@@ -1027,3 +1027,254 @@ a.ghost {
   align-items: center;
   text-decoration: none;
 }
+
+/* ---------------- chores & scores ---------------- */
+
+.mast-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gear {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  color: var(--muted);
+  border-radius: 50%;
+  margin-right: -10px;
+}
+
+.gear:hover {
+  background: var(--sunken);
+}
+
+.settings {
+  padding-top: calc(16px + env(safe-area-inset-top));
+  animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.settings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.settings-title {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.settings-sub {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+  margin-top: 5px;
+  max-width: 40ch;
+  text-wrap: pretty;
+}
+
+.settings-cat {
+  margin-bottom: 22px;
+}
+
+.settings-cat-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 2px 9px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.set-row[data-off='true'] {
+  opacity: 0.45;
+}
+
+.set-hit {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 11px 8px 11px 13px;
+  min-height: 56px;
+  justify-content: center;
+  text-align: left;
+}
+
+/* switch, because hiding a chore is a state you can see at a glance */
+.toggle {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  margin-right: 4px;
+}
+
+.toggle::before {
+  content: '';
+  width: 32px;
+  height: 19px;
+  border-radius: 10px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+  transition: background 0.18s var(--ease-out);
+  grid-area: 1 / 1;
+}
+
+.toggle[aria-checked='true']::before {
+  background: var(--who);
+  border-color: transparent;
+}
+
+.toggle-knob {
+  grid-area: 1 / 1;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--card);
+  transform: translateX(-6px);
+  transition: transform 0.18s var(--ease-spring);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.toggle[aria-checked='true'] .toggle-knob {
+  transform: translateX(6px);
+}
+
+.add-chore {
+  width: 100%;
+  min-height: 44px;
+  font-size: 12.5px;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+  margin-top: 2px;
+}
+
+.add-chore:hover {
+  border-color: var(--faint);
+  color: var(--ink);
+}
+
+/* ---- editor ---- */
+
+.editor {
+  background: var(--card);
+  border: 1px solid color-mix(in srgb, var(--who) 40%, var(--line));
+  border-radius: var(--r-lg);
+  padding: 14px 15px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.editor-name {
+  font-family: var(--body);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--sunken);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  padding: 0 12px;
+  min-height: 44px;
+  width: 100%;
+}
+
+.editor-name:focus {
+  outline: none;
+  border-color: var(--faint);
+}
+
+.dial {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.dial-head {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.dial-label {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.dial-hint {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.target-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.seg {
+  min-height: 44px;
+  font-family: var(--data);
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--sunken);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  transition:
+    background 0.15s var(--ease-out),
+    color 0.15s var(--ease-out);
+}
+
+.seg[data-on='true'] {
+  background: var(--who);
+  color: var(--card);
+  font-weight: 500;
+}
+
+.editor-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.editor-pts {
+  font-family: var(--data);
+  font-size: 12.5px;
+  color: var(--who);
+}
