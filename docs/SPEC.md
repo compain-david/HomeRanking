@@ -387,6 +387,33 @@ done badly means twelve widgets on one screen. Done well it means *one hero
 chart, rendered confidently* — which stays fully compatible with editorial
 calm. One screen, one hero.
 
+### The concrete solution — how each axis reaches 9
+
+The three-layer model above is the principle. This is the build.
+
+| Element | Decision |
+|---|---|
+| **Palette** | Warm off-white base, near-black ink. Exactly **two saturated colours** in the whole app — one per person (teal / violet). Colour *is* identity: if it's coloured, it means a person. |
+| **Type** | A geometric display face for headings and the big numbers; a neutral sans for body; a mono for scores and counters. Numbers are the app's typography — they get the personality. |
+| **Hero** | **One** element per screen. On *This week* it's the weekly total; on *Balance* it's the beam. Never two heroes competing. |
+| **Density** | Collapsible category headers with `12 / 34` counters. Collapsed by default once the list is long, so the screen opens short. |
+| **Motion** | Spring physics on the beam; the total **counts up** rather than jumping; a brief pulse on the row you bumped. No confetti, no mascot. |
+| **Dark mode** | First-class, not an inversion. Both themes designed. |
+
+Axis by axis:
+
+- **Visual wow → 9.** Editorial whitespace plus one confident hero. Restraint
+  everywhere else is what makes the hero land.
+- **Drives daily use → 9.** The weekly total counting up on every tap is the
+  reward moment. Collapsible sections keep the screen short enough to feel
+  effortless. The remaining point would need guilt mechanics, which are out.
+- **Feels adult → 9.** All the playfulness is in motion and none in styling.
+  No cartoon, no mascot, no rounded-everything.
+- **Mental load legible → 10.** A dedicated E / A / M split bar on *Balance*,
+  always visible, never collapsed into a single total. This is the one place
+  the app is deliberately *more* explicit than it needs to be.
+- **Ages well → 9.** A calm base doesn't fatigue; a novelty base does.
+
 **On maximising daily use.** The design targets ~9/10 on drives-daily-use, not
 10/10, and that gap is deliberate. The last point comes from loss-aversion
 streaks, variable rewards and nagging notifications. Those work, and every one
