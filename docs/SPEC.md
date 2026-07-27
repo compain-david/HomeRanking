@@ -139,20 +139,56 @@ scores 7/session on almost no physical effort, which is the honest number.
 ```
 Household        id, name, created_at, week_starts_on
 Person           id, household_id, display_name, colour, avatar
-Chore            id, household_id, name, category, effort, aversion,
-                 mental_load, default_frequency, is_active
+Chore            id, household_id, name, category, emoji, sort_order,
+                 effort, aversion, mental_load,        ← the score
+                 weekly_target, est_minutes,           ← metadata
+                 allows_multi_log, fixed_window, is_active
                  └─ derived: points_per_session = E + A + M
-LogEntry         id, chore_id, person_id, logged_at, points_snapshot
+LogEntry         id, chore_id, person_id, logged_on (date), count,
+                 points_snapshot, was_together, note
                  └─ points_snapshot freezes the score at log time, so
                     retuning E/A/M never rewrites history
 Week             id, household_id, starts_on, ends_on, final_split,
                  streak_continued
 Achievement      id, household_id, person_id, kind, earned_at
+Reward           id, household_id, name, emoji, cost, unlocked_at
 ```
 
 **Key decision:** `LogEntry.points_snapshot` stores the points as they were
 when logged. Retuning scores changes the future, never the past — otherwise
 last week's balance silently rewrites itself and the app loses trust.
+
+### Scoring vs. metadata
+
+Only three fields drive points: `effort`, `aversion`, `mental_load`. Everything
+else on a chore is metadata. This separation is deliberate — see §4 on why no
+fourth scoring dimension is added.
+
+| Attribute | Purpose |
+|---|---|
+| `weekly_target` | Expected times per week. **Not a multiplier** — see below. |
+| `est_minutes` | Displayed to keep numbers grounded. Never scored. |
+| `allows_multi_log` | Whether a chore can be logged more than once a day. |
+| `fixed_window` | Has a hard deadline/day (bin day). Drives reminders, not points. |
+| `emoji`, `sort_order` | Personality and manual ordering in the grid. |
+| `is_active` | Deactivated chores keep their history but leave the totals. |
+
+### Frequency becomes a target, not a multiplier
+
+With daily logging, weekly load is **what was actually logged**, not
+`points × frequency`. `weekly_target` is retained as an expectation, which
+gives the recap a genuinely useful line: *"dishes — target 7, logged 5."*
+
+### Logging rules
+
+- **Multi-log.** Tap once to log; tap again to increment `count`. The cell
+  shows a count badge above 1. Long-press to undo.
+- **Done together.** Both people tap it; each receives full points and the
+  entries are tagged `was_together`. This does not distort the balance —
+  adding equal points to both leaves the ratio unchanged — but it does inflate
+  the household total, so the recap compares **ratio against 50/50**, never
+  total against target.
+- **Self-reported, never approved.** There is no validation step (see §9).
 
 ### Categories & seed chores
 
@@ -167,11 +203,20 @@ deleted.
 
 | Screen | Purpose | Notes |
 |---|---|---|
-| **Today** (home) | The daily 10-second loop. Chore list, one tap to log. Beam at top. Streak visible. | The screen that must be beautiful and fast. Everything else is secondary. |
+| **The Week** (home) | The daily loop. A chore × day grid, one tap per cell to log. Beam at top, streak visible. | The screen that must be beautiful and fast. Everything else is secondary. |
 | **Balance** | The live beam, split by person *and by dimension* (E / A / M). | Where the mental-load insight lives. |
-| **Week recap** | Sunday summary, verdict, one suggestion, streak resolution, reset. | The emotional payoff of the week. |
-| **Tune** (settings) | Add / edit / deactivate chores, set E/A/M via S/M/L, set frequency and time estimate. | Designed to be used *together*, occasionally. Adding a chore must take under ~15 seconds: name, category, three taps, frequency. Unused chores are **deactivated, not deleted**, so they stop distorting totals without losing their history. |
+| **Journal** | Chronological log of every entry: date, person, chore, points. Searchable, exportable. | Builds trust — the numbers are auditable rather than asserted. Adapted from the reference app. |
+| **Week recap** | Sunday summary, verdict, target-vs-logged, one suggestion, streak resolution, reset. | The emotional payoff of the week. |
+| **Tune** (settings) | Add / edit / deactivate / reorder chores, set E/A/M via S/M/L, set target, emoji and time estimate. Rewards catalogue. Export / import. | Designed to be used *together*, occasionally. Adding a chore must take under ~15 seconds: name, emoji, category, three taps, target. Unused chores are **deactivated, not deleted**, so they stop distorting totals without losing history. |
 | **Setup** | Create household, invite partner, pick colours/avatars. | One-time. |
+
+### The Week grid
+
+Rows are chores (grouped by category), columns are Mon–Sun, matching the
+reference app's routine grid. Because each person is signed in, **tapping a
+cell logs *you*** — no picker, no ambiguity, one tap. Tap again to increment
+for a multi-log chore. Today's column is highlighted; past days stay editable
+within the current week.
 
 ## 7. Gamification
 
@@ -189,10 +234,44 @@ The mechanics that drive daily use, ranked by expected impact:
    (10 grim jobs), *Mind Reader* (25 mental-load chores), *Deep Clean*
    (a 12+ point single task).
 
+6. **Household rewards catalogue** — adapted from the reference app, with one
+   critical change: rewards are **household-funded, not individually bought.**
+   Both people pay in from the shared weekly total and unlock a treat together
+   ("350 pts → takeaway Friday"). Same dopamine as spending your own stars,
+   cooperative rather than transactional.
+
 **Explicitly rejected mechanics:** individual streaks (punishing, blame-
 generating), leaderboards against other households (privacy, and irrelevant),
 push notifications that nag (fastest route to deletion — notifications are
-opt-in and limited to the weekly recap).
+opt-in and limited to the weekly recap), and individually-purchased rewards
+(turns shared effort into private currency).
+
+## 7b. What we take from the reference app — and what we must not
+
+The reference (`salommichael.github.io/Nola-James`) is a parent→child app. Its
+structure encodes an **authority relationship**. HomeRanking is peer-to-peer,
+so some of its best-looking features are actively wrong here.
+
+**Adopt:**
+
+| Feature | Why |
+|---|---|
+| Weekly chore × day grid | The core interaction. Fast, legible, one tap. |
+| Journal / audit log | Makes the numbers auditable, which makes them trustworthy. |
+| Export to Excel | Cheap to build, useful for a periodic proper look at the data. |
+| Export / import backup | Essential safety net for self-hosted data. |
+| Drag-to-reorder, emoji per item | Personality and control, very cheap. |
+| Granular reset (by category) | Better than one destructive "reset everything". |
+| Demo mode with shareable link | Lets you show friends without exposing real data. |
+| Rewards catalogue | **Only** in household-funded form — see §7. |
+
+**Reject:**
+
+| Feature | Why it fails between partners |
+|---|---|
+| "Valider la journée / la semaine" | Validation means one person approves another's work. Between adults that is supervision, and it converts a shared tool into a power dynamic. **Logging is self-reported, full stop.** |
+| Punishments catalogue (XS/S/M/L durations) | Correct for a 3-year-old drawing on the walls. Between partners, a system that assigns penalties is the single fastest way to make the app a weapon. |
+| Per-child star balances as private currency | Reinforces "my points vs. yours" — the exact ledger dynamic §2 exists to prevent. |
 
 ## 8. Design direction
 
@@ -267,12 +346,26 @@ never guilt.
 
 ## 11. Open questions
 
-1. Does Alix's existing set of rules change any chore, score or frequency here?
-   Her rules should be reconciled into the seed data before Phase 1.
-2. Should a chore be assignable as "owned" by one person (a plan) in addition
-   to being logged ad hoc, or is logging alone enough?
-3. How should a chore done *together* be logged — 50/50 split, or each person
-   logs their own contribution?
-4. Weekly reset day — Sunday evening assumed.
-5. Should wedding logistics live in this app, or is it a separate project with
-   its own lifespan?
+**Resolved:**
+
+- ~~Time vs. S/M/L weighting~~ → E/A/M model, S/M/L input, time as metadata.
+- ~~Per-person aversion scores~~ → **one shared score per chore**, for
+  simplicity. Revisit only if it visibly misrepresents one of you.
+- ~~How is a chore done together logged~~ → both tap, both get full points,
+  tagged `was_together`.
+- ~~Frequency as multiplier~~ → becomes `weekly_target`; actual load is logged.
+- ~~Adding missing chores~~ → yes, via the Tune/settings screen, under ~15s.
+
+**Open:**
+
+1. **⚠️ Alix's rules — blocking, and not yet available.** They have been
+   referenced but never shared into the project. They must be reconciled into
+   the seed data before Phase 1, and where they disagree with these defaults,
+   hers win. *Nothing here should be treated as reflecting her rules until she
+   has actually reviewed it.*
+2. Weekly reset day — Sunday evening assumed.
+3. Should wedding logistics live in this app (30 pts/wk, 4th heaviest item) or
+   be a separate project with its own end date?
+4. Which chores need `fixed_window` (a real deadline) versus merely being
+   scheduled?
+5. What goes in the rewards catalogue, and at what point costs?

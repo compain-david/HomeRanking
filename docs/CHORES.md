@@ -36,10 +36,10 @@ weekly load        = points per session × times per week
 | **4** | Actively disliked, reliably procrastinated |
 | **5** (L) | Grim — gross, or dread-inducing |
 
-Aversion is the most **personal** dimension. If one of you finds cooking
-relaxing and the other finds it stressful, the score genuinely differs by
-person. Scoring it as a household average is a simplification worth
-revisiting — see open questions.
+Aversion is the most **personal** dimension — if one of you finds cooking
+relaxing and the other finds it stressful, the "true" score differs by person.
+**Decided: one shared score per chore anyway**, for simplicity of setup and
+use. Agree it together. Revisit only if it visibly misrepresents one of you.
 
 ### Mental load (M) — planning, remembering, deciding, coordinating
 
@@ -199,15 +199,17 @@ the worst job?"* and *"where does my week actually go?"*
 
 ## 4. Open questions on this table
 
-1. **Alix's existing rules** — still the biggest gap. If her rules disagree
-   with anything above, hers should win, and folding them in now is far
-   cheaper than after the app is built.
-2. **Is Aversion per-person rather than per-household?** If David finds
-   cooking relaxing and Alix finds it stressful, one shared score is wrong for
-   both. Per-person aversion is more honest but doubles the tuning work.
-3. **Frequencies are guesses.** Do you cook 5 nights or 6? Is the flat
-   vacuumed twice a week? These drive the weekly totals more than the scores do.
+1. **⚠️ Alix's existing rules — still the biggest gap, and still not shared.**
+   Every score in this table is a default written without sight of them. If
+   her rules disagree with anything above, hers win. **Nothing in this file
+   should be presented to her as reflecting her rules.**
+2. **`freq` here is now a weekly *target*, not a multiplier** (see SPEC §5).
+   The `wk` column is therefore an *expected* load used for planning and for
+   the recap's "target vs. logged" line — real weekly load comes from what
+   gets logged.
+3. **Targets are guesses.** Do you cook 5 nights or 6? Is the flat vacuumed
+   twice a week? These move the expected totals more than the scores do.
 4. **Missing chores** — this list is generic. What's specific to your home
-   that isn't here?
+   that isn't here? Add them in the Tune screen.
 5. **Chores that don't apply** — lawn, car — should be deactivated rather than
    scored, so they don't distort the totals.
