@@ -38,7 +38,17 @@ const readHousehold = (): Household | null => {
  * instantly and survive a dead kitchen wifi. Writes are pushed afterwards, and
  * anything the other phone changes arrives over realtime and is merged in.
  */
+export type HistoryRow = {
+  week: string
+  person: PersonId
+  choreId: string
+  count: number
+  points: number
+}
+
 export type History = {
+  /** the raw entries, so an export can be truthful about granularity */
+  rows: HistoryRow[]
   weeks: { week: string; alix: number; david: number }[]
   totals: { alix: number; david: number }
   /** times each person has done each chore — a household total would hide
@@ -285,9 +295,17 @@ export function useSync(
     const weeks = new Map<string, { alix: number; david: number }>()
     const totals = { alix: 0, david: 0 }
     const perChore: History['perChore'] = {}
+    const rows: HistoryRow[] = []
 
     for (const r of data) {
       if (!r.count) continue
+      rows.push({
+        week: r.week_start,
+        person: r.person as PersonId,
+        choreId: r.chore_id,
+        count: r.count,
+        points: r.points || pointsForRef.current(r.chore_id),
+      })
       // points were frozen when logged; fall back for rows written before that
       const pts = (r.points || pointsForRef.current(r.chore_id)) * r.count
       const w = weeks.get(r.week_start) ?? { alix: 0, david: 0 }
@@ -299,6 +317,7 @@ export function useSync(
     }
 
     setHistory({
+      rows,
       weeks: [...weeks.entries()]
         .map(([week, v]) => ({ week, ...v }))
         .sort((a, b) => b.week.localeCompare(a.week)),

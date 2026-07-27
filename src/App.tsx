@@ -3,6 +3,9 @@ import { points, type Chore } from './data/chores'
 import { daysLeft, weekKey, weekLabel } from './week'
 import { EMPTY_COUNTS, useSync, type Counts, type PersonId } from './useSync'
 import SCHEMA_SQL from '../supabase/schema.sql?raw'
+import Recap from './Recap'
+import { monthKey, monthName, monthOf, streakOf } from './close'
+
 const Settings = lazy(() => import('./Settings'))
 const AllTime = lazy(() => import('./AllTime'))
 import { CATEGORY_EMOJI, CATEGORY_NAMES, useChores } from './useChores'
@@ -32,6 +35,7 @@ function localHistory(pointsOf: (id: string) => number) {
   const weeks: { week: string; alix: number; david: number }[] = []
   const totals = { alix: 0, david: 0 }
   const perChore: Record<string, { alix: number; david: number }> = {}
+  const rows: import('./useSync').HistoryRow[] = []
 
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
@@ -46,6 +50,7 @@ function localHistory(pointsOf: (id: string) => number) {
           row[person] += pointsOf(id) * n
           const tally = (perChore[id] ??= { alix: 0, david: 0 })
           tally[person] += n
+          rows.push({ week, person, choreId: id, count: n, points: pointsOf(id) })
         }
       }
       totals.alix += row.alix
@@ -56,7 +61,7 @@ function localHistory(pointsOf: (id: string) => number) {
     }
   }
   weeks.sort((a, b) => b.week.localeCompare(a.week))
-  return { weeks, totals, perChore }
+  return { rows, weeks, totals, perChore }
 }
 
 function loadCounts(wk: string): Counts {
@@ -141,7 +146,12 @@ function Row({
     <div className="row" data-done={count > 0}>
       {/* the whole left side logs the chore, so the tap target is the row */}
       <button className="row-hit" onClick={() => bump(1)} aria-label={`Log ${chore.name}`}>
-        <span className="row-name">{chore.name}</span>
+        <span className="row-name">
+          {(chore as { emoji?: string }).emoji ? (
+            <span className="row-emoji">{(chore as { emoji?: string }).emoji}</span>
+          ) : null}
+          {chore.name}
+        </span>
         <span className="row-meta">
           <Ticks chore={chore} />
           <span className="row-pts">{p} pts</span>
@@ -208,11 +218,28 @@ export default function App() {
   }, [choreApi.chores])
   const [view, setView] = useState<'week' | 'all' | 'settings'>('week')
 
+  const hist = useMemo(
+    () => sync.history ?? localHistory((id) => chorePoints[id] ?? 0),
+    [sync.history, chorePoints, counts],
+  )
+
+  // Last completed week, shown once at the start of the new one.
+  const [recapSeen, setRecapSeen] = useState<string | null>(() =>
+    localStorage.getItem('homeranking:recapSeen'),
+  )
+  const lastWeek = useMemo(
+    () => hist.weeks.filter((w) => w.week < wk).sort((a, b) => b.week.localeCompare(a.week))[0],
+    [hist.weeks, wk],
+  )
+  const showRecap = !!lastWeek && recapSeen !== lastWeek.week
+
+  const streak = useMemo(() => streakOf(hist.weeks, wk), [hist.weeks, wk])
+  const month = useMemo(() => monthOf(hist.weeks, monthKey()), [hist.weeks])
+
   // What this person reaches for most, pinned above the categories. Ranked on
   // history rather than this week, so the shortcut is there on Monday morning
   // when the week is still empty — which is exactly when scrolling hurts most.
   const usual = useMemo(() => {
-    const hist = sync.history ?? localHistory((id) => chorePoints[id] ?? 0)
     const live = counts[who]
     const scored = choreApi.chores
       .filter((c) => c.active && c.name.trim())
@@ -225,7 +252,7 @@ export default function App() {
       .slice(0, 5)
     // one or two entries is not a shortcut, it is noise
     return scored.length >= 3 ? scored.map((x) => x.chore) : []
-  }, [sync.history, choreApi.chores, who, counts, chorePoints])
+  }, [hist, choreApi.chores, who, counts])
 
   // only chores that are switched on, grouped the way the list is drawn
   const groups = useMemo(
@@ -480,6 +507,40 @@ export default function App() {
           </p>
         )}
       </section>
+
+      {showRecap && lastWeek && (
+        <Recap
+          week={lastWeek}
+          weeks={hist.weeks}
+          currentWeek={wk}
+          mentalPctA={mlTotal ? mlPctA : null}
+          onDismiss={() => {
+            localStorage.setItem('homeranking:recapSeen', lastWeek.week)
+            setRecapSeen(lastWeek.week)
+          }}
+        />
+      )}
+
+      {(streak > 0 || month.alix + month.david > 0) && (
+        <section className="standings">
+          {streak > 0 && (
+            <div className="standing">
+              <span className="standing-label">Level weeks in a row</span>
+              <span className="standing-value">{streak}</span>
+            </div>
+          )}
+          {month.alix + month.david > 0 && (
+            <div className="standing">
+              <span className="standing-label">{monthName()} so far</span>
+              <span className="standing-value">
+                <span style={{ color: 'var(--alix)' }}>{month.alix}</span>
+                <span className="standing-slash">/</span>
+                <span style={{ color: 'var(--david)' }}>{month.david}</span>
+              </span>
+            </div>
+          )}
+        </section>
+      )}
 
       {usual.length > 0 && (
         <section className="cat" key="usual">

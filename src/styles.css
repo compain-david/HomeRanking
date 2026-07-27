@@ -1420,3 +1420,222 @@ a.ghost {
 .cat-head[aria-hidden='true'] {
   cursor: default;
 }
+
+/* ---------------- the week closing ---------------- */
+
+.recap {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 16px 16px 14px;
+  margin: 4px 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.recap[data-tone='warn'] {
+  border-color: color-mix(in srgb, var(--tilt) 42%, var(--line));
+}
+
+.recap-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.recap-eyebrow {
+  font-family: var(--data);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.recap-close {
+  width: 44px;
+  height: 44px;
+  margin: -14px -12px -14px 0;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.recap-headline {
+  font-family: var(--display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.recap-detail {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.recap-bar {
+  display: flex;
+  height: 26px;
+  border-radius: 13px;
+  overflow: hidden;
+  background: var(--sunken);
+  margin-top: 2px;
+}
+
+.recap-a,
+.recap-d {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.recap-a {
+  background: var(--alix);
+  justify-content: flex-start;
+  padding-left: 10px;
+}
+
+.recap-d {
+  background: var(--david);
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.recap-num {
+  font-family: var(--data);
+  font-size: 12px;
+  color: var(--card);
+  font-variant-numeric: tabular-nums;
+}
+
+.recap-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}
+
+.recap-streak {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* streak + month strip */
+
+.standings {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.standing {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.standing-label {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.standing-value {
+  font-family: var(--data);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.standing-slash {
+  color: var(--line);
+  margin: 0 3px;
+}
+
+/* ---------------- journal, emoji, backup ---------------- */
+
+.row-emoji {
+  margin-right: 6px;
+}
+
+.editor-top {
+  display: flex;
+  gap: 8px;
+}
+
+.editor-emoji {
+  width: 56px;
+  flex: none;
+  text-align: center;
+  font-size: 19px;
+  background: var(--sunken);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  min-height: 44px;
+  color: var(--ink);
+}
+
+.editor-emoji:focus,
+.editor-name:focus {
+  outline: none;
+  border-color: var(--faint);
+}
+
+.journalrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin-bottom: 5px;
+  font-size: 12.5px;
+}
+
+.journalrow-week {
+  font-family: var(--data);
+  font-size: 11px;
+  color: var(--faint);
+  width: 42px;
+  flex: none;
+}
+
+.journalrow-who {
+  font-size: 11px;
+  width: 40px;
+  flex: none;
+}
+
+.journalrow-who[data-who='alix'] {
+  color: var(--alix);
+}
+
+.journalrow-who[data-who='david'] {
+  color: var(--david);
+}
+
+.journalrow-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.journalrow-count {
+  font-family: var(--data);
+  font-size: 11.5px;
+  color: var(--muted);
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}

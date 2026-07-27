@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import type { History } from './useSync'
 import type { EditableChore } from './useChores'
+import { exportCsv } from './backup'
 
 const PEOPLE = [
   { id: 'alix', name: 'Alix', varName: 'var(--alix)' },
@@ -106,6 +108,8 @@ export default function AllTime({
         </section>
       )}
 
+      <JournalSection history={history} chores={chores} />
+
       <section className="settings-cat">
         <div className="settings-cat-head">
           <span className="cat-name">Who has done what, how often</span>
@@ -148,5 +152,61 @@ export default function AllTime({
         )}
       </section>
     </div>
+  )
+}
+
+/**
+ * The counters are weekly, not timestamped, so this cannot pretend to be a
+ * minute-by-minute feed. It is the honest thing instead: every entry, newest
+ * week first, exactly as stored.
+ */
+function JournalSection({
+  history,
+  chores,
+}: {
+  history: History | null
+  chores: EditableChore[]
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const rows = (history?.rows ?? [])
+    .slice()
+    .sort((a, b) => b.week.localeCompare(a.week) || b.count - a.count)
+  if (!rows.length) return null
+
+  const nameOf = new Map(chores.map((c) => [c.id, c.name]))
+  const shown = expanded ? rows : rows.slice(0, 8)
+
+  return (
+    <section className="settings-cat">
+      <div className="settings-cat-head">
+        <span className="cat-name">Journal</span>
+        <button
+          className="ghost"
+          onClick={() => history && exportCsv(history, chores)}
+          style={{ marginLeft: 'auto' }}
+        >
+          Export CSV
+        </button>
+      </div>
+
+      {shown.map((r, i) => (
+        <div className="journalrow" key={`${r.week}-${r.person}-${r.choreId}-${i}`}>
+          <span className="journalrow-week">{r.week.slice(5)}</span>
+          <span className="journalrow-who" data-who={r.person}>
+            {r.person === 'alix' ? 'Alix' : 'David'}
+          </span>
+          <span className="journalrow-name">{nameOf.get(r.choreId) ?? r.choreId}</span>
+          <span className="journalrow-count">
+            {r.count}× · {r.count * r.points}
+          </span>
+        </div>
+      ))}
+
+      {rows.length > 8 && (
+        <button className="add-chore" onClick={() => setExpanded((e) => !e)}>
+          {expanded ? 'Show less' : `Show all ${rows.length} entries`}
+        </button>
+      )}
+    </section>
   )
 }

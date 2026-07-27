@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { exportBackup, importBackup } from './backup'
 import { CATEGORY_EMOJI, CATEGORY_NAMES, type EditableChore } from './useChores'
 import type { useChores } from './useChores'
 
@@ -72,13 +73,23 @@ function ChoreEditor({
 
   return (
     <div className="editor">
-      <input
-        className="editor-name"
-        value={draft.name}
-        placeholder="What is the chore?"
-        onChange={(e) => patch({ name: e.target.value })}
-        aria-label="Chore name"
-      />
+      <div className="editor-top">
+        <input
+          className="editor-emoji"
+          value={draft.emoji}
+          placeholder="🙂"
+          maxLength={2}
+          onChange={(e) => patch({ emoji: e.target.value })}
+          aria-label="Emoji"
+        />
+        <input
+          className="editor-name"
+          value={draft.name}
+          placeholder="What is the chore?"
+          onChange={(e) => patch({ name: e.target.value })}
+          aria-label="Chore name"
+        />
+      </div>
 
       <Dial
         label="Effort"
@@ -122,6 +133,12 @@ function ChoreEditor({
       <div className="editor-foot">
         <span className="editor-pts">{pts} points each time</span>
         <div className="sync-actions">
+          <button className="ghost" onClick={() => api.move(draft.id, -1)} aria-label="Move up">
+            ↑
+          </button>
+          <button className="ghost" onClick={() => api.move(draft.id, 1)} aria-label="Move down">
+            ↓
+          </button>
           <button className="ghost" onClick={() => api.remove(draft.id).then(onClose)}>
             Delete
           </button>
@@ -142,6 +159,8 @@ export default function Settings({
   onClose: () => void
 }) {
   const [editing, setEditing] = useState<string | null>(null)
+  const [note, setNote] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   return (
     <div className="settings">
@@ -175,7 +194,10 @@ export default function Settings({
               ) : (
                 <div className="set-row" key={c.id} data-off={!c.active}>
                   <button className="set-hit" onClick={() => setEditing(c.id)}>
-                    <span className="row-name">{c.name || 'Untitled chore'}</span>
+                    <span className="row-name">
+                      {c.emoji && <span className="row-emoji">{c.emoji}</span>}
+                      {c.name || 'Untitled chore'}
+                    </span>
                     <span className="row-meta">
                       <span className="row-pts">
                         {c.effort + c.aversion + c.mentalLoad} pts
@@ -205,6 +227,43 @@ export default function Settings({
           </section>
         )
       })}
+
+      <section className="settings-cat">
+        <div className="settings-cat-head">
+          <span className="cat-name">Backup</span>
+        </div>
+        <p className="footer-note" style={{ marginBottom: 10 }}>
+          A single file with every week held on this device and your chore list. Keep one
+          before changing anything you would hate to lose.
+        </p>
+        <div className="sync-actions">
+          <button className="ghost" onClick={() => exportBackup(api.chores)}>
+            Download backup
+          </button>
+          <button className="ghost" onClick={() => fileRef.current?.click()}>
+            Restore from file
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json"
+            hidden
+            onChange={async (e) => {
+              const f = e.target.files?.[0]
+              if (!f) return
+              try {
+                const b = await importBackup(f)
+                if (b.chores?.length) await api.replaceAll(b.chores)
+                setNote('Restored. Reopen the app to see the weeks.')
+              } catch (err) {
+                setNote(err instanceof Error ? err.message : 'Could not read that file.')
+              }
+              e.target.value = ''
+            }}
+          />
+        </div>
+        {note && <p className="sync-error">{note}</p>}
+      </section>
 
       <footer className="footer">
         <p className="footer-note">

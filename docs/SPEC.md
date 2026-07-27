@@ -467,10 +467,14 @@ never guilt.
   infrastructure.
 - **Phase 2 — Shared.** Supabase schema + RLS, auth, household invite, realtime
   sync across both phones.
-- **Phase 3 — The week. Partly built.** ✅ Points frozen at log time, week-by-week
-  history, all-time totals and per-chore tallies ("Since the beginning").
-  ⬜ Still to come: the Sunday recap moment, the shared streak, and the monthly
-  ranking.
+- **Phase 3 — The week. ✅ Built.** Points frozen at log time, week-by-week
+  history, all-time totals, per-person chore tallies, the once-per-week recap
+  with its verdict, the shared streak, and the monthly standing.
+- **Phase 5 — Journal. ✅ Built.** Every entry, newest first, with CSV export.
+  The counters are weekly rather than timestamped, so the journal is honest
+  about its granularity rather than pretending to be a live feed.
+- **Phase 6 — Polish. ✅ Built.** Emoji per chore, manual reordering, and a
+  JSON backup you can download and restore.
 - **Phase 4 — Tuning & polish.** Tune screen, dimension-split view, PWA,
   offline queue, dark mode.
 

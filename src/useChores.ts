@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { CATEGORIES, type Chore } from './data/chores'
 import { supabase } from './supabase'
 
-export type EditableChore = Chore & { active: boolean; sortOrder: number }
+export type EditableChore = Chore & { active: boolean; sortOrder: number; emoji: string }
 
 export const CATEGORY_NAMES = CATEGORIES.map((c) => c.name)
 export const CATEGORY_EMOJI = Object.fromEntries(CATEGORIES.map((c) => [c.name, c.emoji]))
@@ -11,7 +11,7 @@ const LOCAL_KEY = 'homeranking:chores:v1'
 
 const defaults = (): EditableChore[] =>
   CATEGORIES.flatMap((cat, ci) =>
-    cat.chores.map((c, i) => ({ ...c, active: true, sortOrder: ci * 100 + i })),
+    cat.chores.map((c, i) => ({ ...c, active: true, sortOrder: ci * 100 + i, emoji: '' })),
   )
 
 function readLocal(): EditableChore[] {
@@ -34,6 +34,7 @@ const toRow = (c: EditableChore, householdId: string) => ({
   aversion: c.aversion,
   mental_load: c.mentalLoad,
   weekly_target: c.target,
+  emoji: c.emoji ?? '',
   sort_order: c.sortOrder,
   is_active: c.active,
 })
@@ -81,6 +82,7 @@ export function useChores(householdId: string | null) {
           aversion: r.aversion,
           mentalLoad: r.mental_load,
           target: Number(r.weekly_target),
+          emoji: r.emoji ?? '',
           active: r.is_active,
           sortOrder: r.sort_order,
         })),
@@ -115,6 +117,7 @@ export function useChores(householdId: string | null) {
               aversion: r.aversion,
               mentalLoad: r.mental_load,
               target: Number(r.weekly_target),
+              emoji: r.emoji ?? '',
               active: r.is_active,
               sortOrder: r.sort_order,
             })),
@@ -150,6 +153,7 @@ export function useChores(householdId: string | null) {
         aversion: 1,
         mentalLoad: 1,
         target: 1,
+        emoji: '',
         active: true,
         sortOrder: 9000,
       }
@@ -179,6 +183,42 @@ export function useChores(householdId: string | null) {
     [householdId],
   )
 
+  /** Swap sort order with the neighbour above or below, within a category. */
+  const move = useCallback(
+    async (id: string, dir: -1 | 1) => {
+      const me = chores.find((c) => c.id === id)
+      if (!me) return
+      const siblings = chores
+        .filter((c) => c.category === me.category)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+      const i = siblings.findIndex((c) => c.id === id)
+      const other = siblings[i + dir]
+      if (!other) return
+      const a = { ...me, sortOrder: other.sortOrder }
+      const b = { ...other, sortOrder: me.sortOrder }
+      setChores((prev) => prev.map((c) => (c.id === a.id ? a : c.id === b.id ? b : c)))
+      if (householdId) {
+        await supabase
+          .from('chores')
+          .upsert([toRow(a, householdId), toRow(b, householdId)], {
+            onConflict: 'household_id,chore_key',
+          })
+      }
+    },
+    [chores, householdId],
+  )
+
+  const replaceAll = useCallback(
+    async (next: EditableChore[]) => {
+      setChores(next)
+      if (householdId) {
+        await supabase.from('chores').delete().eq('household_id', householdId)
+        await supabase.from('chores').insert(next.map((c) => toRow(c, householdId)))
+      }
+    },
+    [householdId],
+  )
+
   const reset = useCallback(async () => {
     const seed = defaults()
     setChores(seed)
@@ -188,5 +228,5 @@ export function useChores(householdId: string | null) {
     }
   }, [householdId])
 
-  return { chores, save, add, setActive, remove, reset }
+  return { chores, save, add, setActive, remove, reset, move, replaceAll }
 }
