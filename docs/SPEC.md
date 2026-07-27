@@ -2,7 +2,7 @@
 
 **Version:** 0.1 (draft for review)
 **Owners:** Alix & David
-**Status:** Spec under review — no implementation yet
+**Status:** Phase 1 built — weekly tracker, local state only
 
 ---
 
@@ -436,8 +436,8 @@ never guilt.
 | Layer | Choice | Why |
 |---|---|---|
 | UI | **React + Vite + TypeScript** | Live shared state and several screens make components worth it. Fast build, great DX. |
-| Styling | **Tailwind CSS** | Rapid iteration on a custom design system without fighting a component library's opinions. |
-| Motion | **Framer Motion** | Spring physics for the beam and reward bursts — the core of the "feel". |
+| Styling | **Hand-written CSS + custom properties** | Replaced Tailwind in Phase 1. The design is bespoke rather than composed from utilities, and a token-based stylesheet expresses "colour means a person" directly — the person's hue is one variable the whole tree reads. |
+| Motion | **CSS transitions** | Replaced Framer Motion in Phase 1. The app has a handful of animations — the beam, the counting total, a pulse on log — and a spring-ish `cubic-bezier` covers all three. Fewer dependencies, less to break. Revisit only if an interaction genuinely needs physics. |
 | Backend | **Supabase** (Postgres + Realtime + Auth), free tier | Both phones see the same live data. Realtime subscriptions mean the beam moves on your phone when Alix logs on hers. Auth via email magic link. |
 | Hosting | **GitHub Pages** | Free, from this repo, at `github.io` as you wanted. Static host is fine since Supabase is the backend. |
 | Install | **PWA** (installable, offline-tolerant) | Home-screen icon is critical for a daily-tap habit. Offline queue so logging works with bad kitchen wifi. |
@@ -454,9 +454,10 @@ never guilt.
 
 ## 10. Build phases
 
-- **Phase 1 — The feel.** Today screen, beam, log interaction, seed chores,
-  local state only. Goal: prove the 10-second loop is delightful before adding
-  any infrastructure.
+- **Phase 1 — The feel. ✅ Built.** Person tabs, weekly counters with steppers,
+  counting total, balance beam, E/A/M split, collapsible categories, light and
+  dark. Local state only. Goal: prove the loop is pleasant before adding
+  infrastructure.
 - **Phase 2 — Shared.** Supabase schema + RLS, auth, household invite, realtime
   sync across both phones.
 - **Phase 3 — The week.** Recap screen, streak, weekly reset, achievements.
