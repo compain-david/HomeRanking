@@ -2275,3 +2275,12 @@ a.ghost {
   border-top: 1px solid var(--line);
   margin-top: 4px;
 }
+
+.recap-footnote {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--faint);
+  text-align: center;
+  margin-top: 10px;
+  text-wrap: pretty;
+}

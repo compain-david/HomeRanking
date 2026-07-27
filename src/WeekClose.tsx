@@ -19,7 +19,7 @@ export function CloseSlider({ onClose }: { onClose: () => void }) {
   if (reduced()) {
     return (
       <button className="closebtn glass" onClick={onClose}>
-        Close the week
+        Look back at the week
       </button>
     )
   }
@@ -67,7 +67,7 @@ export function CloseSlider({ onClose }: { onClose: () => void }) {
         className="slider-thumb"
         role="button"
         tabIndex={0}
-        aria-label="Slide to close the week"
+        aria-label="Slide to look back at the week"
         aria-valuenow={pct}
         aria-valuemin={0}
         aria-valuemax={100}
@@ -82,7 +82,7 @@ export function CloseSlider({ onClose }: { onClose: () => void }) {
       >
         →
       </div>
-      <span className="slider-label">Slide to close the week</span>
+      <span className="slider-label">Slide to look back at the week</span>
       <span className="slider-chevrons" aria-hidden="true">
         ›››
       </span>
@@ -140,7 +140,7 @@ export function RecapOverlay({
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="recap-eyebrow">Week closed</span>
+        <span className="recap-eyebrow">The week so far</span>
         <h2 className="lede-title" style={{ fontSize: 28 }}>
           The week, <em>seen.</em>
         </h2>
@@ -210,6 +210,11 @@ export function RecapOverlay({
             {streak} level {streak === 1 ? 'week' : 'weeks'} in a row
           </p>
         )}
+
+        <p className="recap-footnote">
+          Nothing resets now — the week keeps counting until Sunday night, then starts
+          fresh on its own.
+        </p>
 
         <div className="recap-actions">
           <button className="ghost" onClick={onAllTime}>

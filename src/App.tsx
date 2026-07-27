@@ -713,8 +713,8 @@ export default function App() {
             on its own, and the − button handles real mistakes. */}
         <p className="footer-note">
           {closedWeeks.includes(wk)
-            ? 'This week is closed. Anything you log still counts, and it resets after Sunday.'
-            : 'The week resets after Sunday. Use − on a row to correct a mistake.'}
+            ? 'You have looked back at this week. It still counts until Sunday, then resets on its own.'
+            : 'The week resets after Sunday on its own. Use − on a row to correct a mistake.'}
         </p>
       </footer>
     </div>
