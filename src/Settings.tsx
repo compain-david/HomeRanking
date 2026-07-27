@@ -164,8 +164,8 @@ export default function Settings({
         <div>
           <h1 className="settings-title">Chores &amp; scores</h1>
           <p className="settings-sub">
-            Change anything here and it changes on both phones — including this
-            week&rsquo;s totals, which are recalculated from the current scores.
+            Change anything here and it changes on both phones. Scores apply to
+            what you log from now on — nothing already logged is revalued.
           </p>
         </div>
         <button className="ghost" onClick={onClose}>

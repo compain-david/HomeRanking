@@ -7,6 +7,7 @@ import Recap from './Recap'
 import { CloseSlider, RecapOverlay } from './WeekClose'
 import { targetLabel } from './labels'
 import { monthKey, monthName, monthOf, streakOf } from './close'
+import { clearErrors, readErrors } from './errorlog'
 
 const Settings = lazy(() => import('./Settings'))
 const AllTime = lazy(() => import('./AllTime'))
@@ -27,6 +28,8 @@ const PEOPLE = [
 
 const EMPTY = EMPTY_COUNTS
 const storageKey = (wk: string) => `homeranking:v1:${wk}`
+/** Points as they were when logged, mirroring entries.points on the server. */
+const ptsKey = (wk: string) => `homeranking:pts:${wk}`
 
 /**
  * Past weeks are already sitting in local storage under their own keys — they
@@ -38,6 +41,13 @@ function localHistory(
   liveWeek?: string,
   liveCounts?: Counts,
 ) {
+  const frozen = (week: string): Record<string, number> => {
+    try {
+      return JSON.parse(localStorage.getItem(ptsKey(week)) || '{}')
+    } catch {
+      return {}
+    }
+  }
   const weeks: { week: string; alix: number; david: number }[] = []
   const totals = { alix: 0, david: 0 }
   const perChore: Record<string, { alix: number; david: number }> = {}
@@ -55,14 +65,17 @@ function localHistory(
         liveWeek === week && liveCounts
           ? liveCounts
           : (JSON.parse(localStorage.getItem(key)!) as Counts)
+      const snap = frozen(week)
+      // a score changed in settings must not rewrite what past weeks were worth
+      const worth = (id: string) => snap[id] ?? pointsOf(id)
       const row = { week, alix: 0, david: 0 }
       for (const person of ['alix', 'david'] as PersonId[]) {
         for (const [id, n] of Object.entries(parsed[person] ?? {})) {
           if (!n) continue
-          row[person] += pointsOf(id) * n
+          row[person] += worth(id) * n
           const tally = (perChore[id] ??= { alix: 0, david: 0 })
           tally[person] += n
-          rows.push({ week, person, choreId: id, count: n, points: pointsOf(id) })
+          rows.push({ week, person, choreId: id, count: n, points: worth(id) })
         }
       }
       totals.alix += row.alix
@@ -296,13 +309,35 @@ export default function App() {
         const next = Math.max(0, (prev[person][choreId] ?? 0) + delta)
         // the tap lands locally first; the write follows and queues if offline
         sync.push(person, choreId, next)
+        try {
+          const snap = JSON.parse(localStorage.getItem(ptsKey(wk)) || '{}')
+          if (snap[choreId] === undefined) {
+            snap[choreId] = chorePoints[choreId] ?? 0
+            localStorage.setItem(ptsKey(wk), JSON.stringify(snap))
+          }
+        } catch {
+          /* a missing snapshot degrades to the current score, never to a crash */
+        }
         return { ...prev, [person]: { ...prev[person], [choreId]: next } }
       })
     },
-    [sync],
+    [sync, wk, chorePoints],
   )
 
   const totals = useMemo(() => {
+    // Same frozen points the journal and the server use. Retuning a score
+    // changes what future logging is worth, never what past logging was —
+    // including earlier today. Two numbers for one week is worse than either
+    // rule on its own.
+    let snap: Record<string, number> = {}
+    try {
+      snap = JSON.parse(localStorage.getItem(ptsKey(wk)) || '{}')
+    } catch {
+      snap = {}
+    }
+    const worth = (c: { id: string; effort: number; aversion: number; mentalLoad: number }) =>
+      snap[c.id] ?? c.effort + c.aversion + c.mentalLoad
+
     const of = (person: PersonId) => {
       let total = 0
       let e = 0
@@ -313,7 +348,7 @@ export default function App() {
         const n = counts[person][c.id] ?? 0
         if (!n) continue
         done += n
-        total += n * points(c)
+        total += n * worth(c)
         e += n * c.effort
         a += n * c.aversion
         m += n * c.mentalLoad
@@ -321,7 +356,7 @@ export default function App() {
       return { total, e, a, m, done }
     }
     return { alix: of('alix'), david: of('david') }
-  }, [counts, choreApi.chores])
+  }, [counts, choreApi.chores, wk])
 
   const active = totals[who]
   const assigned = totals.alix.total + totals.david.total
@@ -896,6 +931,8 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
             <span>{sync.state}</span>
             <span>{sync.lastPull ? `pulled ${sync.lastPull}` : 'not pulled yet'}</span>
           </div>
+          <ErrorLog />
+
           <div className="sync-actions">
             <button className="ghost" onClick={() => sync.loadHistory()}>
               Refresh now
@@ -988,6 +1025,33 @@ function SetupGuide() {
           </li>
         </ol>
       )}
+    </div>
+  )
+}
+
+/** Recent errors, so a failure on the other phone can be read out loud. */
+function ErrorLog() {
+  const [errs, setErrs] = useState(readErrors)
+  if (!errs.length) return null
+  return (
+    <div className="errlog">
+      <div className="errlog-head">
+        <span>{errs.length} recent problem{errs.length === 1 ? '' : 's'}</span>
+        <button
+          className="ghost"
+          onClick={() => {
+            clearErrors()
+            setErrs([])
+          }}
+        >
+          Clear
+        </button>
+      </div>
+      {errs.slice(0, 3).map((e, i) => (
+        <p key={i} className="errlog-line">
+          <span>{e.at}</span> {e.msg}
+        </p>
+      ))}
     </div>
   )
 }

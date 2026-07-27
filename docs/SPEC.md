@@ -165,12 +165,11 @@ Achievement      id, household_id, person_id, kind, earned_at
 when logged. Retuning scores changes the future, never the past — otherwise
 last week's balance silently rewrites itself and the app loses trust.
 
-> **Implemented for synced history.** `entries.points` now freezes the score at
-> write time, so retuning a chore in settings no longer rewrites past weeks in
-> the all-time view. Two caveats: the *current* week's headline still
-> recalculates from live scores, which is intentional while the week is open;
-> and local-only history (used before a household is connected) has no snapshot,
-> so it recalculates from current scores throughout.
+> **Implemented everywhere.** `entries.points` freezes the score at write time
+> on the server, and a parallel local snapshot does the same on the device, so
+> retuning a chore never revalues anything already logged — including earlier
+> in the current week. An earlier version left the live week recalculating,
+> which produced two different totals for the same week in the same screen.
 
 ### Scoring vs. metadata
 
