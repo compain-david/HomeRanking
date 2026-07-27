@@ -367,21 +367,23 @@ button {
   color: var(--faint);
 }
 
-/* ---------------- dimension split ---------------- */
+/* ---------------- how the load divides ---------------- */
 
-.split {
+.compare {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  padding: 14px 15px;
+  padding: 14px 15px 13px;
   margin: 4px 0 22px;
 }
 
-.split-head {
+.compare-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 11px;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .split-title {
@@ -390,18 +392,67 @@ button {
   font-size: 13px;
 }
 
-.split-note {
-  font-size: 11.5px;
+.compare-legend {
+  display: flex;
+  gap: 9px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
   color: var(--faint);
 }
 
-.split-bar {
+/* the legend is person-neutral: tone alone carries the dimension */
+.legend-swatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.legend-swatch[data-dim='e'] {
+  opacity: 0.75;
+}
+.legend-swatch[data-dim='a'] {
+  opacity: 0.42;
+}
+.legend-swatch[data-dim='m'] {
+  opacity: 0.2;
+}
+
+.compare-row {
   display: flex;
-  height: 8px;
-  border-radius: 4px;
-  overflow: hidden;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 0;
+}
+
+.compare-name {
+  font-size: 12px;
+  color: var(--muted);
+  width: 42px;
+  flex: none;
+}
+
+.compare-track {
+  flex: 1;
+  height: 12px;
   background: var(--sunken);
-  margin-bottom: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* both bars are scaled against the heavier person, so their lengths can be
+   compared directly rather than each filling the full width */
+.compare-bar {
+  display: flex;
+  height: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: width 0.5s var(--ease-out);
 }
 
 .split-seg {
@@ -410,7 +461,6 @@ button {
   transition: width 0.5s var(--ease-out);
 }
 
-/* the three dimensions are told apart by tone, not by new hues */
 .split-seg[data-dim='e'] {
   opacity: 1;
 }
@@ -421,48 +471,39 @@ button {
   opacity: 0.28;
 }
 
-.split-keys {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.split-key {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.split-key-top {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.swatch {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  background: var(--who);
+.compare-total {
+  font-family: var(--data);
+  font-size: 13px;
+  width: 30px;
+  text-align: right;
   flex: none;
-}
-
-.swatch[data-dim='a'] {
-  opacity: 0.58;
-}
-.swatch[data-dim='m'] {
-  opacity: 0.28;
-}
-
-.split-key-name {
-  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
   color: var(--muted);
 }
 
-.split-key-val {
-  font-family: var(--data);
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
+.insight {
+  margin-top: 11px;
+  padding-top: 11px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.insight[data-flag='warn'] {
+  color: var(--ink);
+}
+
+.insight[data-flag='warn']::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tilt);
+  margin-right: 7px;
+  vertical-align: 1px;
 }
 
 /* ---------------- categories ---------------- */

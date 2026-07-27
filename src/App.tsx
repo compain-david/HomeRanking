@@ -209,7 +209,30 @@ export default function App() {
         ? `An even split, with ${daysLeft()} ${daysLeft() === 1 ? 'day' : 'days'} left in the week.`
         : `${heavier} is carrying ${Math.max(pctA, 100 - pctA)}%. About ${Math.round(gap / 2)} points would move to ${lighter} to level it.`
 
-  const dimTotal = active.e + active.a + active.m || 1
+  // The headline total can read level while the experience is not: one
+  // person's points can be mostly effort and the other's mostly mental load.
+  // This is the comparison the app exists to surface.
+  const mlTotal = totals.alix.m + totals.david.m
+  const mlPctA = mlTotal ? Math.round((totals.alix.m / mlTotal) * 100) : 50
+  // 60/40 and beyond is worth naming: when the totals are level, that gap is
+  // precisely the asymmetry the headline number cannot show
+  const mlLopsided = mlTotal > 0 && Math.abs(mlPctA - 50) >= 10
+  const mlHeavier = mlPctA > 50 ? 'Alix' : 'David'
+  const mlShare = Math.max(mlPctA, 100 - mlPctA)
+
+  const insight: { text: string; flag: 'warn' | 'calm' } | null = !assigned
+    ? null
+    : mlLopsided && level
+      ? {
+          flag: 'warn',
+          text: `The totals are level, but ${mlHeavier} is carrying ${mlShare}% of the mental load — the noticing and remembering, which the total does not show.`,
+        }
+      : mlLopsided
+        ? {
+            flag: 'warn',
+            text: `${mlHeavier} is carrying ${mlShare}% of the mental load this week.`,
+          }
+        : { flag: 'calm', text: 'Mental load is split fairly evenly this week.' }
 
   return (
     <div className="app" style={style}>
@@ -275,33 +298,54 @@ export default function App() {
         </div>
       </header>
 
-      <section className="split">
-        <div className="split-head">
-          <span className="split-title">What {person.name}&rsquo;s points are made of</span>
-          <span className="split-note">
-            {active.total ? `${Math.round((active.m / dimTotal) * 100)}% mental load` : 'no data'}
+      <section className="compare">
+        <div className="compare-head">
+          <span className="split-title">What the points are made of</span>
+          <span className="compare-legend" aria-hidden="true">
+            {(['e', 'a', 'm'] as const).map((dim) => (
+              <span className="legend-item" key={dim}>
+                <span className="legend-swatch" data-dim={dim} />
+                {dim === 'e' ? 'Effort' : dim === 'a' ? 'Aversion' : 'Mental'}
+              </span>
+            ))}
           </span>
         </div>
-        <div className="split-bar">
-          <div className="split-seg" data-dim="e" style={{ width: `${(active.e / dimTotal) * 100}%` }} />
-          <div className="split-seg" data-dim="a" style={{ width: `${(active.a / dimTotal) * 100}%` }} />
-          <div className="split-seg" data-dim="m" style={{ width: `${(active.m / dimTotal) * 100}%` }} />
-        </div>
-        <div className="split-keys">
-          {[
-            ['e', 'Effort', active.e],
-            ['a', 'Aversion', active.a],
-            ['m', 'Mental load', active.m],
-          ].map(([dim, label, val]) => (
-            <div className="split-key" key={dim as string}>
-              <span className="split-key-top">
-                <span className="swatch" data-dim={dim} />
-                <span className="split-key-name">{label}</span>
+
+        {PEOPLE.map((pp) => {
+          const t = totals[pp.id]
+          const sum = t.e + t.a + t.m || 1
+          // bars are scaled against the heavier person, so their lengths
+          // compare directly instead of both filling the width
+          const scale = (t.total / heaviest) * 100
+          return (
+            <div
+              className="compare-row"
+              key={pp.id}
+              style={{ '--who': pp.varName } as React.CSSProperties}
+            >
+              <span className="compare-name">{pp.name}</span>
+              <span className="compare-track">
+                <span className="compare-bar" style={{ width: `${scale}%` }}>
+                  {(['e', 'a', 'm'] as const).map((dim) => (
+                    <span
+                      key={dim}
+                      className="split-seg"
+                      data-dim={dim}
+                      style={{ width: `${((dim === 'e' ? t.e : dim === 'a' ? t.a : t.m) / sum) * 100}%` }}
+                    />
+                  ))}
+                </span>
               </span>
-              <span className="split-key-val">{val}</span>
+              <span className="compare-total">{t.total}</span>
             </div>
-          ))}
-        </div>
+          )
+        })}
+
+        {insight && (
+          <p className="insight" data-flag={insight.flag}>
+            {insight.text}
+          </p>
+        )}
       </section>
 
       {CATEGORIES.map((cat) => {
