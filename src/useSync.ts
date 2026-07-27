@@ -27,7 +27,13 @@ type Household = { id: string; code: string }
 const readHousehold = (): Household | null => {
   try {
     const raw = localStorage.getItem(HOUSEHOLD_KEY)
-    return raw ? (JSON.parse(raw) as Household) : null
+    if (!raw) return null
+    const stored = JSON.parse(raw) as Household
+    // A device that joined before there was a shared household is still
+    // pointing at its own. Treating that as "no household" makes it re-join
+    // the shared one and push whatever it logged in the meantime.
+    if (stored.code !== HOUSEHOLD_CODE) return null
+    return stored
   } catch {
     return null
   }
