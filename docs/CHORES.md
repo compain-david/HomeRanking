@@ -8,8 +8,15 @@ screen, and their values override everything here.
 
 ## 1. How to grade a chore
 
-Three independent dimensions, each 1–5. Collected in the UI as **S / M / L**
-(= 1 / 3 / 5), with 2 and 4 available when a chore sits between anchors.
+Three independent dimensions, each set as **Small / Medium / High** in the
+settings screen — three levels only, scored 1 / 3 / 5.
+
+Levels 2 and 4 were considered and dropped: if the settings screen offers only
+S/M/H, a seed score of 2 or 4 is one the household **cannot reproduce or edit
+back to**, which makes the defaults quietly un-editable. Three levels still
+give seven distinct point values (3, 5, 7, 9, 11, 13, 15) — ample resolution.
+The 2 and 4 rows in the anchor tables below are shown for judgement when a
+chore sits between levels; round to the nearer anchor.
 
 ```
 points per completion = Effort + Aversion + Mental load     (range 3–15)
@@ -72,54 +79,54 @@ anyway**, agreed between you, for simplicity.
 
 | Chore | E | A | M | pts | t |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Put dishes in the dishwasher | 2 | 2 | 1 | **5** | 7 |
-| Launch the dishwasher | 1 | 1 | 2 | **4** | 5 |
-| Empty the dishwasher | 2 | 3 | 1 | **6** | 5 |
+| Put dishes in the dishwasher | 1 | 1 | 1 | **3** | 7 |
+| Launch the dishwasher | 1 | 1 | 3 | **5** | 5 |
+| Empty the dishwasher | 1 | 3 | 1 | **5** | 5 |
 | Wipe counters & stovetop | 1 | 1 | 1 | **3** | 7 |
 | Cook dinner | 3 | 1 | 3 | **7** | 5 |
 | Meal planning & grocery list | 1 | 1 | 5 | **7** | 1 |
-| Grocery shopping | 3 | 2 | 2 | **7** | 1 |
-| Unpack & put away shopping | 2 | 2 | 1 | **5** | 1 |
-| Clean fridge & sort leftovers | 2 | 3 | 2 | **7** | 0.5 |
-| Deep clean oven | 4 | 4 | 1 | **9** | 0.25 |
-| Vacuum the sofa | 2 | 2 | 2 | **6** | 0.5 |
-| Vacuum the chairs | 2 | 2 | 2 | **6** | 0.5 |
+| Grocery shopping | 3 | 3 | 3 | **9** | 1 |
+| Unpack & put away shopping | 1 | 3 | 1 | **5** | 1 |
+| Clean fridge & sort leftovers | 1 | 3 | 3 | **7** | 0.5 |
+| Deep clean oven | 3 | 5 | 1 | **9** | 0.25 |
+| Vacuum the sofa | 1 | 1 | 3 | **5** | 0.5 |
+| Vacuum the chairs | 1 | 1 | 3 | **5** | 0.5 |
 
 ### Bathroom
 
 | Chore | E | A | M | pts | t |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Clean toilet | 2 | 5 | 1 | **8** | 1 |
+| Clean toilet | 1 | 5 | 1 | **7** | 1 |
 | Wipe sink & mirror | 1 | 1 | 1 | **3** | 1 |
-| Notice & restock loo roll / soap | 1 | 1 | 4 | **6** | 1 |
+| Notice & restock loo roll / soap | 1 | 1 | 5 | **7** | 1 |
 
 ### Laundry & clothes
 
 | Chore | E | A | M | pts | t |
 |---|:-:|:-:|:-:|:-:|:-:|
 | Launch a laundry load | 1 | 1 | 3 | **5** | 3 |
-| Unload & hang on the étendoir | 2 | 3 | 2 | **7** | 3 |
-| Fold & put away | 2 | 3 | 1 | **6** | 3 |
+| Unload & hang on the étendoir | 1 | 3 | 3 | **7** | 3 |
+| Fold & put away | 3 | 3 | 1 | **7** | 3 |
 | Put out the bed sheets for the cleaner | 1 | 1 | 3 | **5** | 0.5 |
 
 ### Floors & surfaces
 
 | Chore | E | A | M | pts | t |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Prepare the house for the robot | 2 | 2 | 3 | **7** | 3 |
-| Launch the robot vacuum | 1 | 1 | 2 | **4** | 3 |
-| Empty & clean the robot | 1 | 4 | 3 | **8** | 1 |
+| Prepare the house for the robot | 1 | 3 | 3 | **7** | 3 |
+| Launch the robot vacuum | 1 | 1 | 3 | **5** | 3 |
+| Empty & clean the robot | 1 | 5 | 3 | **9** | 1 |
 | Buy replacement parts for the robot | 1 | 1 | 5 | **7** | 0.1 |
 
 ### Bins & recycling
 
 | Chore | E | A | M | pts | t |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Bring the bins in from the box | 2 | 2 | 3 | **7** | 1 |
-| Take the rubbish out to the bins | 2 | 3 | 3 | **8** | 2 |
-| Take the cardboard out to the bins | 2 | 2 | 3 | **7** | 1 |
-| Replace the bin bags | 1 | 3 | 2 | **6** | 0.5 |
-| Clean the bin | 2 | 5 | 2 | **9** | 0.25 |
+| Bring the bins in from the box | 1 | 3 | 3 | **7** | 1 |
+| Take the rubbish out to the bins | 1 | 3 | 3 | **7** | 2 |
+| Take the cardboard out to the bins | 1 | 3 | 3 | **7** | 1 |
+| Replace the bin bags | 1 | 3 | 1 | **5** | 0.5 |
+| Clean the bin | 1 | 5 | 3 | **9** | 0.25 |
 
 ### Admin & mental load
 
@@ -127,24 +134,24 @@ anyway**, agreed between you, for simplicity.
 |---|:-:|:-:|:-:|:-:|:-:|
 | Collect the post | 1 | 1 | 3 | **5** | 3 |
 | Pay bills & manage budget | 1 | 3 | 5 | **9** | 1 |
-| Work on investments | 2 | 2 | 5 | **9** | 1 |
-| Manage the cleaner — payment & schedule | 1 | 2 | 5 | **8** | 0.5 |
-| Book & track appointments | 1 | 2 | 5 | **8** | 1 |
-| Birthdays, gifts & social calendar | 2 | 1 | 5 | **8** | 1 |
+| Work on investments | 3 | 1 | 5 | **9** | 1 |
+| Manage the cleaner — payment & schedule | 1 | 3 | 5 | **9** | 0.5 |
+| Book & track appointments | 1 | 3 | 5 | **9** | 1 |
+| Birthdays, gifts & social calendar | 3 | 1 | 5 | **9** | 1 |
 | Track household supplies running low | 1 | 1 | 5 | **7** | 1 |
-| Insurance, renewals, paperwork | 1 | 4 | 5 | **10** | 0.25 |
-| Coordinate repairs & tradespeople | 2 | 4 | 5 | **11** | 0.1 |
-| Wedding logistics & coordination | 3 | 2 | 5 | **10** | 3 |
+| Insurance, renewals, paperwork | 1 | 5 | 5 | **11** | 0.25 |
+| Coordinate repairs & tradespeople | 3 | 5 | 5 | **13** | 0.1 |
+| Wedding logistics & coordination | 3 | 3 | 5 | **11** | 3 |
 
 ### Outdoor & occasional
 
 | Chore | E | A | M | pts | t |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Water plants | 1 | 1 | 2 | **4** | 3 |
-| Mow lawn / garden tidy | 4 | 2 | 2 | **8** | 0.5 |
-| Car maintenance, service, admin | 2 | 3 | 5 | **10** | 0.1 |
-| Wash the car | 3 | 2 | 1 | **6** | 0.25 |
-| Declutter / reorganise a room | 4 | 2 | 3 | **9** | 0.1 |
+| Water plants | 1 | 1 | 3 | **5** | 3 |
+| Mow lawn / garden tidy | 5 | 3 | 3 | **11** | 0.5 |
+| Car maintenance, service, admin | 3 | 3 | 5 | **11** | 0.1 |
+| Wash the car | 3 | 3 | 1 | **7** | 0.25 |
+| Declutter / reorganise a room | 5 | 3 | 3 | **11** | 0.1 |
 
 **43 chores.**
 
@@ -173,16 +180,16 @@ granular version:
 
 ### Outsourcing cleaning removed effort, not mental load
 
-Expected weekly load ≈ **435 points**, split by dimension:
+Expected weekly load ≈ **438 points**, split by dimension:
 
 | Dimension | Points | Share |
 |---|:-:|:-:|
-| Effort | 126 | 29% |
-| Aversion | 135 | 31% |
-| **Mental load** | **174** | **40%** |
+| Effort | 106 | 24% |
+| Aversion | 140 | 32% |
+| **Mental load** | **192** | **44%** |
 
-**Mental load rose from ~35% to 40%, and is now the single largest dimension —
-larger than physical effort.** Bringing in a cleaner deleted eight physical
+**Mental load rose from ~35% to 44%, and is now by far the largest dimension —
+almost double physical effort.** Bringing in a cleaner deleted eight physical
 chores, but every admin task survived, and managing the cleaner (payment,
 scheduling, prepping sheets) *added* new mental load.
 
@@ -190,6 +197,21 @@ This is the pattern worth knowing: **you can outsource effort, but the
 noticing, remembering and coordinating stays with you.** A system scoring only
 physical work would show this household getting dramatically lighter. It
 didn't — it got proportionally more mental.
+
+### Heaviest per completion vs. heaviest per week
+
+| Heaviest per completion | pts | | Heaviest per week | wk |
+|---|:-:|---|---|:-:|
+| Coordinate repairs & tradespeople | 13 | | Cook dinner | 35 |
+| Insurance, renewals, paperwork | 11 | | Wedding logistics | 33 |
+| Wedding logistics | 11 | | Launch the dishwasher | 25 |
+| Mow lawn / garden tidy | 11 | | Empty the dishwasher | 25 |
+| Car maintenance, service, admin | 11 | | Put dishes in the dishwasher | 21 |
+
+The two lists barely overlap. **The dishwasher cycle alone is 71 pts/week** —
+more than double the heaviest single job in the house — purely because it
+happens every day. Splitting it into three steps was the right call: it is the
+household's largest single load and was previously hidden inside one row.
 
 ### The robot vacuum illustrates the model
 

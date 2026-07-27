@@ -83,12 +83,16 @@ outweigh a rare heavy one.
 Full anchors for each level, the seed chore table and the derived analysis live
 in [CHORES.md](./CHORES.md).
 
-### Input method: S / M / L, not sliders
+### Input method: three levels, not sliders
 
-The scoring *model* and the scoring *UI* are separate problems. The model is
-E/A/M on a 1–5 scale; the input is three **S / M / L** taps per chore
-(= 1 / 3 / 5), with 2 and 4 available for precision. Asking for 99 numeric
-decisions across 33 chores is enough friction to lose the user during setup.
+Each dimension is set in settings as **Small / Medium / High** — three levels
+only, scored 1 / 3 / 5. Asking for numeric values across 43 chores is enough
+friction to lose the user during setup.
+
+**Levels 2 and 4 are deliberately excluded.** If the settings screen offers
+only S/M/H, then a seed value of 2 or 4 is one the household cannot reproduce
+or edit back to — the defaults would be quietly un-editable. Three levels give
+seven distinct point totals (3, 5, 7, 9, 11, 13, 15), which is ample.
 
 ### Why not time-based weighting
 
