@@ -117,11 +117,13 @@ anyway**, agreed between you, for simplicity.
 | Launch the robot vacuum | 1 | 1 | 3 | **5** | 3 |
 | Empty & clean the robot | 1 | 5 | 3 | **9** | 1 |
 | Buy replacement parts for the robot | 1 | 1 | 5 | **7** | 0.1 |
+| Tidy & declutter shared spaces | 1 | 3 | 3 | **7** | 5 |
 
 ### Bins & recycling
 
 | Chore | E | A | M | pts | t |
 |---|:-:|:-:|:-:|:-:|:-:|
+| Track collection day & put the bins out | 1 | 3 | 5 | **9** | 1 |
 | Bring the bins in from the box | 1 | 3 | 3 | **7** | 1 |
 | Take the rubbish out to the bins | 1 | 3 | 3 | **7** | 2 |
 | Take the cardboard out to the bins | 1 | 3 | 3 | **7** | 1 |

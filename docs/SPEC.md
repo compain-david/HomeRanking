@@ -42,25 +42,29 @@ against this, and they are non-negotiable requirements, not preferences:
 
 ## 3. Core loop
 
-Decided: **live scoreboard** (log chores as you do them), on a weekly cycle.
+Decided: **weekly counters** — bump a chore's count whenever you like, with no
+obligation to log daily and no validation step.
 
 ```
-Plan (occasionally)      Log (daily)              Resolve (weekly)
-─────────────────────    ────────────────────     ──────────────────────
-Tune E/A/M scores    →   Tap a chore as done  →   Sunday recap
-Set frequencies          Points burst             Beam verdict
-                         Beam tilts live          Streak +1 if balanced
-                         Household streak         Ledger resets to zero
-                              ↑                        │
-                              └────────────────────────┘
+Plan (occasionally)      Log (any time)            Resolve
+─────────────────────    ──────────────────────    ──────────────────────
+Tune E/A/M scores    →   Bump a chore's count  →   Sunday: weekly recap,
+Set weekly targets       Points update             beam verdict, streak,
+Add / remove chores      Beam tilts live           week resets
+                              ↑                    1st: monthly ranking
+                              └──────────────────────────┘
 ```
 
-**Daily:** open, tap what you did, see the beam respond. Target interaction
-time: under 10 seconds.
+**Any time:** open, bump what you've done, see the beam respond. A missed day
+is not a failure and leaves no empty cell — catching up on Sunday is a
+supported way to use the app, not a lapse.
 
-**Weekly:** a recap screen — what the split was, which categories drove it,
-where the mental load actually sat, and one concrete suggestion for next week.
-Then everything zeroes.
+**Weekly (Sunday):** a recap — the split, which categories drove it, where the
+mental load sat, target vs. logged, and one concrete suggestion. Then the week
+zeroes.
+
+**Monthly (1st):** the monthly ranking closes and resets, keeping a longer view
+than the weekly cycle alone.
 
 ## 4. Scoring model
 
@@ -155,7 +159,6 @@ LogEntry         id, chore_id, person_id, logged_on (date), count,
 Week             id, household_id, starts_on, ends_on, final_split,
                  streak_continued
 Achievement      id, household_id, person_id, kind, earned_at
-Reward           id, household_id, name, emoji, cost, unlocked_at
 ```
 
 **Key decision:** `LogEntry.points_snapshot` stores the points as they were
@@ -217,10 +220,10 @@ deleted.
 | Screen | Purpose | Notes |
 |---|---|---|
 | **Today** (home) | **One tab per person.** Your own chore list, grouped into collapsible categories with `0/4`-style counters, one tap to log. Big daily point total at the top. | The screen that must be beautiful and fast. Everything else is secondary. |
-| **Balance** (summary) | The live beam, the week's ranking, split by person *and by dimension* (E / A / M). | Where the mental-load insight lives, and where the two tabs are compared. |
+| **Balance** (summary) | The live beam, split by person *and by dimension* (E / A / M), plus **weekly and monthly rankings**. | Where the mental-load insight lives, and where the two tabs are compared. |
 | **Journal** | Chronological log of every entry: date, person, chore, points. Searchable, exportable. | Builds trust — the numbers are auditable rather than asserted. Adapted from the reference app. |
 | **Week recap** | Sunday summary, verdict, target-vs-logged, one suggestion, streak resolution, reset. | The emotional payoff of the week. |
-| **Tune** (settings) | Add / edit / deactivate / reorder chores, set E/A/M via S/M/L, set target, emoji and time estimate. Rewards catalogue. Export / import. | Designed to be used *together*, occasionally. Adding a chore must take under ~15 seconds: name, emoji, category, three taps, target. Unused chores are **deactivated, not deleted**, so they stop distorting totals without losing history. |
+| **Tune** (settings) | Add / edit / deactivate / reorder chores, set E/A/M via S/M/L, set target, emoji and time estimate. Export / import. | Designed to be used *together*, occasionally. Adding a chore must take under ~15 seconds: name, emoji, category, three taps, target. Unused chores are **deactivated, not deleted**, so they stop distorting totals without losing history. |
 | **Setup** | Create household, invite partner, pick colours/avatars. | One-time. |
 
 ### Logging model: weekly counters, not a daily grid
@@ -295,17 +298,12 @@ The mechanics that drive daily use, ranked by expected impact:
    (10 grim jobs), *Mind Reader* (25 mental-load chores), *Deep Clean*
    (a 12+ point single task).
 
-6. **Household rewards catalogue** — adapted from the reference app, with one
-   critical change: rewards are **household-funded, not individually bought.**
-   Both people pay in from the shared weekly total and unlock a treat together
-   ("350 pts → takeaway Friday"). Same dopamine as spending your own stars,
-   cooperative rather than transactional.
-
 **Explicitly rejected mechanics:** individual streaks (punishing, blame-
 generating), leaderboards against other households (privacy, and irrelevant),
 push notifications that nag (fastest route to deletion — notifications are
-opt-in and limited to the weekly recap), and individually-purchased rewards
-(turns shared effort into private currency).
+opt-in and limited to the weekly recap), and a **rewards catalogue** of any
+kind — dropped at the household's request, keeping the app to tracking rather
+than bartering.
 
 ## 7b. What we take from the reference app — and what we must not
 
@@ -324,7 +322,6 @@ so some of its best-looking features are actively wrong here.
 | Drag-to-reorder, emoji per item | Personality and control, very cheap. |
 | Granular reset (by category) | Better than one destructive "reset everything". |
 | Demo mode with shareable link | Lets you show friends without exposing real data. |
-| Rewards catalogue | **Only** in household-funded form — see §7. |
 
 **Reject:**
 
@@ -350,6 +347,17 @@ an authority relationship, and each fails in a peer relationship.
 wants a ranking and the project is named for it. A two-person ranking is the
 beam with a winner named, so: the balance is the headline, the ranking sits
 beneath it.
+
+**Two ranking periods**, following Ludus's monthly league:
+
+| Period | Resets | Purpose |
+|---|---|---|
+| **Weekly** | Sunday | The active cycle — drives the recap and the streak. |
+| **Monthly** | 1st of the month | A longer view. One heavy week matters less; persistent patterns show up. |
+
+The weekly reset still guarantees no debt accumulates (§2) — the monthly
+ranking is a *view over history*, not a running balance to settle. It shows
+totals and the split, never "who owes whom".
 
 **League of households (v2, proposed).** Ludus's league uses an invite code. A
 league of two people is zero-sum, but a league of *households* is not: Alix and
@@ -446,15 +454,17 @@ never guilt.
 - ~~Weekly reset day~~ → **Sunday**.
 - ~~Two people in one grid~~ → **one tab per person**, plus a shared Balance
   and summary screen.
-- ~~Correcting a mis-tap~~ → undo toast, long-press stepper, Journal delete.
+- ~~Correcting a mis-tap~~ → the counter's `−` button.
+- ~~Cleaner frequency~~ → **once a fortnight**; both cleaner-related chores sit
+  at a target of 0.5/week.
+- ~~Rewards catalogue~~ → **dropped.** Not wanted.
+- ~~Tidying and bin-day tracking~~ → both real; restored as chores.
+- ~~Wedding logistics~~ → stays, in the Admin category.
 
 **Open:**
 
-1. Final chore list — pending review; David to add and remove.
+1. Final chore list — pending a last review pass.
 2. Weekly targets per chore (how many nights cooking, etc.).
-3. Should wedding logistics live in this app (30 pts/wk, 4th heaviest item) or
-   be a separate project with its own end date?
-4. Which chores need `fixed_window` (a real deadline) versus merely being
+3. Which chores need `fixed_window` (a real deadline) versus merely being
    scheduled?
-5. What goes in the rewards catalogue, and at what point costs?
-6. League of households — v2, worth building?
+4. League of households — v2, worth building?
