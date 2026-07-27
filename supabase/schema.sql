@@ -197,8 +197,11 @@ begin
 end;
 $$;
 
-revoke all on function public.create_household(text) from public;
-revoke all on function public.join_household(text) from public;
+-- Both refuse to run without auth.uid(), but there is no reason for them to be
+-- reachable by the anon role at all. is_member is deliberately left alone: the
+-- RLS policies call it as the querying role, so revoking it breaks every policy.
+revoke all on function public.create_household(text) from anon, public;
+revoke all on function public.join_household(text)   from anon, public;
 grant execute on function public.create_household(text) to authenticated;
 grant execute on function public.join_household(text)   to authenticated;
 
