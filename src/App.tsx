@@ -4,6 +4,8 @@ import { daysLeft, weekKey, weekLabel } from './week'
 import { EMPTY_COUNTS, useSync, type Counts, type PersonId } from './useSync'
 import SCHEMA_SQL from '../supabase/schema.sql?raw'
 import Recap from './Recap'
+import { CloseSlider, RecapOverlay } from './WeekClose'
+import { targetLabel } from './labels'
 import { monthKey, monthName, monthOf, streakOf } from './close'
 
 const Settings = lazy(() => import('./Settings'))
@@ -31,7 +33,11 @@ const storageKey = (wk: string) => `homeranking:v1:${wk}`
  * were just never read back. This makes the all-time view work before, and
  * without, any connection.
  */
-function localHistory(pointsOf: (id: string) => number) {
+function localHistory(
+  pointsOf: (id: string) => number,
+  liveWeek?: string,
+  liveCounts?: Counts,
+) {
   const weeks: { week: string; alix: number; david: number }[] = []
   const totals = { alix: 0, david: 0 }
   const perChore: Record<string, { alix: number; david: number }> = {}
@@ -41,8 +47,14 @@ function localHistory(pointsOf: (id: string) => number) {
     const key = localStorage.key(i)
     if (!key?.startsWith('homeranking:v1:')) continue
     try {
-      const parsed = JSON.parse(localStorage.getItem(key)!) as Counts
       const week = key.slice('homeranking:v1:'.length)
+      // The current week is read from live state, not storage: the write is an
+      // effect, so storage is one render behind and the recap would under-count
+      // whatever was just logged.
+      const parsed =
+        liveWeek === week && liveCounts
+          ? liveCounts
+          : (JSON.parse(localStorage.getItem(key)!) as Counts)
       const row = { week, alix: 0, david: 0 }
       for (const person of ['alix', 'david'] as PersonId[]) {
         for (const [id, n] of Object.entries(parsed[person] ?? {})) {
@@ -155,7 +167,7 @@ function Row({
         <span className="row-meta">
           <Ticks chore={chore} />
           <span className="row-pts">{p} pts</span>
-          <span className="row-target">target {chore.target}</span>
+          <span className="row-target">{targetLabel(chore.target)}</span>
         </span>
       </button>
       <div className="stepper">
@@ -211,11 +223,19 @@ export default function App() {
   }, [choreApi.chores])
   const [view, setView] = useState<'week' | 'all' | 'settings'>('week')
   const [q, setQ] = useState('')
+  const [closing, setClosing] = useState(false)
+  const [closedWeeks, setClosedWeeks] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('homeranking:closed') || '[]')
+    } catch {
+      return []
+    }
+  })
   const [dim, setDim] = useState<'e' | 'a' | 'm' | null>(null)
 
   const hist = useMemo(
-    () => sync.history ?? localHistory((id) => chorePoints[id] ?? 0),
-    [sync.history, chorePoints, counts],
+    () => sync.history ?? localHistory((id) => chorePoints[id] ?? 0, wk, counts),
+    [sync.history, chorePoints, counts, wk],
   )
 
   // Last completed week, shown once at the start of the new one.
@@ -402,7 +422,7 @@ export default function App() {
       <div className="app" style={style}>
         <Suspense fallback={<p className="loading">Loading…</p>}>
           <AllTime
-            history={sync.history ?? localHistory((id) => chorePoints[id] ?? 0)}
+            history={sync.history ?? localHistory((id) => chorePoints[id] ?? 0, wk, counts)}
             chores={choreApi.chores}
             currentWeek={wk}
             onClose={() => setView('week')}
@@ -664,9 +684,37 @@ export default function App() {
         )
       })}
 
+      {!matches && assigned > 0 && !closedWeeks.includes(wk) && (
+        <CloseSlider onClose={() => setClosing(true)} />
+      )}
+
+      {closing && (
+        <RecapOverlay
+          week={{ week: wk, alix: totals.alix.total, david: totals.david.total }}
+          weeks={hist.weeks}
+          rows={hist.rows}
+          currentWeek={wk}
+          mentalPctA={mlTotal ? mlPctA : null}
+          totals={hist.totals}
+          nameOf={(id) => choreApi.chores.find((c) => c.id === id)?.name ?? id}
+          onAllTime={() => {
+            setClosing(false)
+            setView('all')
+          }}
+          onDone={() => {
+            const next = [...new Set([...closedWeeks, wk])]
+            localStorage.setItem('homeranking:closed', JSON.stringify(next))
+            setClosedWeeks(next)
+            setClosing(false)
+          }}
+        />
+      )}
+
       <footer className="footer">
         <p className="footer-note">
-          Saved on this device only. The week resets after Sunday.
+          {closedWeeks.includes(wk)
+            ? 'This week is closed. Anything you log still counts.'
+            : 'The week resets after Sunday.'}
         </p>
         {undo ? (
           <button className="ghost" data-undo="true" onClick={() => { setCounts(undo); setUndo(null) }}>

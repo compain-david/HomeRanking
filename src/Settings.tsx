@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { exportBackup, importBackup } from './backup'
 import { applyTheme, readTheme, type Theme } from './theme'
+import { TARGETS, targetLabel } from './labels'
 import { CATEGORY_EMOJI, CATEGORY_NAMES, type EditableChore } from './useChores'
 import type { useChores } from './useChores'
 
@@ -9,17 +10,6 @@ const LEVELS = [
   { v: 3, label: 'M' },
   { v: 5, label: 'H' },
 ] as const
-
-const TARGETS = [
-  { v: 7, label: 'Daily' },
-  { v: 5, label: '5×' },
-  { v: 3, label: '3×' },
-  { v: 2, label: '2×' },
-  { v: 1, label: 'Weekly' },
-  { v: 0.5, label: 'Every 2 wks' },
-  { v: 0.25, label: 'Monthly' },
-  { v: 0.1, label: 'Rarely' },
-]
 
 function Dial({
   label,
@@ -208,7 +198,7 @@ export default function Settings({
                       <span className="row-pts">
                         {c.effort + c.aversion + c.mentalLoad} pts
                       </span>
-                      <span className="row-target">target {c.target}</span>
+                      <span className="row-target">{targetLabel(c.target)}</span>
                     </span>
                   </button>
                   <button
