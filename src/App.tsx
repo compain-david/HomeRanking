@@ -2,6 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ALL_CHORES, CATEGORIES, points, type Chore } from './data/chores'
 import { daysLeft, weekKey, weekLabel } from './week'
 import { EMPTY_COUNTS, useSync, type Counts, type PersonId } from './useSync'
+import SCHEMA_SQL from '../supabase/schema.sql?raw'
+
+const PROJECT = 'jasildjjlncoriepjosp'
+const SQL_EDITOR = `https://supabase.com/dashboard/project/${PROJECT}/sql/new`
+const AUTH_PROVIDERS = `https://supabase.com/dashboard/project/${PROJECT}/auth/providers`
 
 /* ---------------- people ---------------- */
 
@@ -462,6 +467,7 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
                   Start a shared home
                 </button>
               </div>
+              <SetupGuide />
               <div className="sync-join">
                 <input
                   className="sync-input"
@@ -480,6 +486,63 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
           )}
           {sync.error && <p className="sync-error">{sync.error}</p>}
         </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * The two setup steps need a signed-in dashboard, so they cannot be automated
+ * from the app. This keeps them to one tap and one paste each.
+ */
+function SetupGuide() {
+  const [copied, setCopied] = useState(false)
+  const [open, setOpen] = useState(false)
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(SCHEMA_SQL)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  return (
+    <div className="setup">
+      <button className="setup-toggle" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        First time? Two one-off steps
+        <span className="caret" data-open={open} />
+      </button>
+
+      {open && (
+        <ol className="setup-steps">
+          <li>
+            <span className="setup-step">Create the tables</span>
+            <div className="sync-actions">
+              <button className="ghost" onClick={copy}>
+                {copied ? 'SQL copied ✓' : 'Copy the SQL'}
+              </button>
+              <a className="ghost" href={SQL_EDITOR} target="_blank" rel="noreferrer">
+                Open SQL editor ↗
+              </a>
+            </div>
+            <span className="setup-hint">Paste it in, press Run. Once, ever.</span>
+          </li>
+          <li>
+            <span className="setup-step">Allow anonymous sign-in</span>
+            <div className="sync-actions">
+              <a className="ghost" href={AUTH_PROVIDERS} target="_blank" rel="noreferrer">
+                Open providers ↗
+              </a>
+            </div>
+            <span className="setup-hint">
+              Turn on “Anonymous sign-ins”. Your invite code is what actually guards the
+              data, so nobody needs an account or a password.
+            </span>
+          </li>
+        </ol>
       )}
     </div>
   )
