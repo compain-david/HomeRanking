@@ -203,10 +203,6 @@ export default function App() {
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(CATEGORY_NAMES.map((n, i) => [n, i === 0])),
   )
-  // clearing is reversible rather than confirmed: a dialog interrupts, an undo
-  // costs nothing and is still there if the tap was a mistake
-  const [undo, setUndo] = useState<Counts | null>(null)
-
   useEffect(() => {
     localStorage.setItem(storageKey(wk), JSON.stringify(counts))
   }, [counts, wk])
@@ -711,20 +707,15 @@ export default function App() {
       )}
 
       <footer className="footer">
+        {/* No "clear week" here on purpose. It only ever cleared the phone it
+            was tapped on, and a single tap that erases the other person's
+            logged work is a power neither of you should have. The week resets
+            on its own, and the − button handles real mistakes. */}
         <p className="footer-note">
           {closedWeeks.includes(wk)
-            ? 'This week is closed. Anything you log still counts.'
-            : 'The week resets after Sunday.'}
+            ? 'This week is closed. Anything you log still counts, and it resets after Sunday.'
+            : 'The week resets after Sunday. Use − on a row to correct a mistake.'}
         </p>
-        {undo ? (
-          <button className="ghost" data-undo="true" onClick={() => { setCounts(undo); setUndo(null) }}>
-            Undo clear
-          </button>
-        ) : (
-          <button className="ghost" onClick={() => { setUndo(counts); setCounts(EMPTY) }}>
-            Clear week
-          </button>
-        )}
       </footer>
     </div>
   )
