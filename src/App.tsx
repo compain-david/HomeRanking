@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ALL_CHORES, CATEGORIES, points, type Chore } from './data/chores'
 import { daysLeft, weekKey, weekLabel } from './week'
+import { EMPTY_COUNTS, useSync, type Counts, type PersonId } from './useSync'
 
 /* ---------------- people ---------------- */
 
@@ -9,13 +10,9 @@ const PEOPLE = [
   { id: 'david', name: 'David', varName: 'var(--david)' },
 ] as const
 
-type PersonId = (typeof PEOPLE)[number]['id']
-
 /* ---------------- persistence ---------------- */
 
-type Counts = Record<PersonId, Record<string, number>>
-
-const EMPTY: Counts = { alix: {}, david: {} }
+const EMPTY = EMPTY_COUNTS
 const storageKey = (wk: string) => `homeranking:v1:${wk}`
 
 function loadCounts(wk: string): Counts {
@@ -155,14 +152,18 @@ export default function App() {
     localStorage.setItem(storageKey(wk), JSON.stringify(counts))
   }, [counts, wk])
 
+  const sync = useSync(wk, counts, setCounts)
+
   const bump = useCallback(
     (person: PersonId, choreId: string, delta: number) => {
       setCounts((prev) => {
         const next = Math.max(0, (prev[person][choreId] ?? 0) + delta)
+        // the tap lands locally first; the write follows and queues if offline
+        sync.push(person, choreId, next)
         return { ...prev, [person]: { ...prev[person], [choreId]: next } }
       })
     },
-    [],
+    [sync],
   )
 
   const totals = useMemo(() => {
@@ -246,6 +247,8 @@ export default function App() {
           </div>
           <div className="weekstamp">{weekLabel()}</div>
         </div>
+
+        <SyncBar sync={sync} />
 
         <div className="tabs" role="tablist" aria-label="Whose list">
           {PEOPLE.map((p) => (
@@ -399,6 +402,85 @@ export default function App() {
           </button>
         )}
       </footer>
+    </div>
+  )
+}
+
+/* ---------------- household & sync ---------------- */
+
+function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
+  const [open, setOpen] = useState(false)
+  const [code, setCode] = useState('')
+  const connected = !!sync.household
+
+  const label =
+    !connected
+      ? 'This device only'
+      : sync.state === 'live'
+        ? `Shared · ${sync.household!.code}`
+        : sync.state === 'offline'
+          ? 'Offline — saved here, will sync'
+          : sync.state === 'error'
+            ? 'Sync problem'
+            : 'Connecting…'
+
+  return (
+    <div className="sync">
+      <button className="sync-chip" data-state={connected ? sync.state : 'none'} onClick={() => setOpen((o) => !o)}>
+        <span className="sync-dot" />
+        {label}
+      </button>
+
+      {open && (
+        <div className="sync-panel">
+          {connected ? (
+            <>
+              <p className="sync-note">
+                Share this code with {`Alix`} so her phone shows the same week.
+              </p>
+              <div className="sync-code">{sync.household!.code}</div>
+              <div className="sync-actions">
+                <button
+                  className="ghost"
+                  onClick={() => navigator.clipboard?.writeText(sync.household!.code)}
+                >
+                  Copy code
+                </button>
+                <button className="ghost" onClick={sync.leave}>
+                  Disconnect
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="sync-note">
+                Right now this week is saved on this device only. Connect once and both
+                phones show the same numbers.
+              </p>
+              <div className="sync-actions">
+                <button className="ghost" data-primary="true" onClick={sync.create}>
+                  Start a shared home
+                </button>
+              </div>
+              <div className="sync-join">
+                <input
+                  className="sync-input"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="Or enter a code"
+                  aria-label="Household invite code"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                />
+                <button className="ghost" onClick={() => sync.join(code)} disabled={code.length < 4}>
+                  Join
+                </button>
+              </div>
+            </>
+          )}
+          {sync.error && <p className="sync-error">{sync.error}</p>}
+        </div>
+      )}
     </div>
   )
 }
