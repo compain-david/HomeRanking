@@ -680,8 +680,16 @@ export default function App() {
         )
       })}
 
-      {!matches && assigned > 0 && !closedWeeks.includes(wk) && (
-        <CloseSlider onClose={() => setClosing(true)} />
+      {!matches && assigned > 0 && (
+        // Once you have looked, the slider steps back to a quiet link. Nothing
+        // here changes any data, so there is no reason to see it only once.
+        closedWeeks.includes(wk) ? (
+          <button className="lookagain" onClick={() => setClosing(true)}>
+            Look at this week again
+          </button>
+        ) : (
+          <CloseSlider onClose={() => setClosing(true)} />
+        )
       )}
 
       {closing && (
