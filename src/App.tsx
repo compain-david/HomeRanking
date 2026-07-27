@@ -141,6 +141,9 @@ export default function App() {
     Object.fromEntries(CATEGORIES.map((c, i) => [c.name, i === 0])),
   )
   const [compact, setCompact] = useState(false)
+  // clearing is reversible rather than confirmed: a dialog interrupts, an undo
+  // costs nothing and is still there if the tap was a mistake
+  const [undo, setUndo] = useState<Counts | null>(null)
 
   useEffect(() => {
     const onScroll = () => setCompact(window.scrollY > 64)
@@ -386,14 +389,15 @@ export default function App() {
         <p className="footer-note">
           Saved on this device only. The week resets after Sunday.
         </p>
-        <button
-          className="ghost"
-          onClick={() => {
-            if (confirm('Clear everything logged this week, for both of you?')) setCounts(EMPTY)
-          }}
-        >
-          Clear week
-        </button>
+        {undo ? (
+          <button className="ghost" data-undo="true" onClick={() => { setCounts(undo); setUndo(null) }}>
+            Undo clear
+          </button>
+        ) : (
+          <button className="ghost" onClick={() => { setUndo(counts); setCounts(EMPTY) }}>
+            Clear week
+          </button>
+        )}
       </footer>
     </div>
   )

@@ -1,0 +1,16 @@
+{
+  "name": "HomeRanking",
+  "short_name": "HomeRanking",
+  "description": "Shared household load, including the part nobody sees.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f1f3f0",
+  "theme_color": "#f1f3f0",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

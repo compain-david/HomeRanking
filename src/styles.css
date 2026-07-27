@@ -12,8 +12,8 @@
   --card: #fbfcfa;
   --sunken: #e8ebe6;
   --ink: #141917;
-  --muted: #5d6763;
-  --faint: #8b948f;
+  --muted: #4a544f;
+  --faint: #626d68;
   --line: #dfe4df;
 
   --alix: #16706a;
@@ -40,8 +40,8 @@
     --card: #171c1a;
     --sunken: #1f2523;
     --ink: #e6eae6;
-    --muted: #98a29d;
-    --faint: #6b7571;
+    --muted: #a7b1ab;
+    --faint: #869089;
     --line: #262d2a;
 
     --alix: #3fa39b;
@@ -58,8 +58,8 @@
   --card: #fbfcfa;
   --sunken: #e8ebe6;
   --ink: #141917;
-  --muted: #5d6763;
-  --faint: #8b948f;
+  --muted: #4a544f;
+  --faint: #626d68;
   --line: #dfe4df;
   --alix: #16706a;
   --david: #5b4bc4;
@@ -71,8 +71,8 @@
   --card: #171c1a;
   --sunken: #1f2523;
   --ink: #e6eae6;
-  --muted: #98a29d;
-  --faint: #6b7571;
+  --muted: #a7b1ab;
+  --faint: #869089;
   --line: #262d2a;
   --alix: #3fa39b;
   --david: #8b7df0;
@@ -192,7 +192,9 @@ button {
 .tab-pts {
   font-family: var(--data);
   font-size: 12px;
-  color: var(--faint);
+  /* muted, not faint: this sits on the sunken tab strip, where faint falls
+     just under the 4.5:1 minimum */
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -770,6 +772,11 @@ button {
 
 .ghost:hover {
   border-color: var(--faint);
+}
+
+.ghost[data-undo='true'] {
+  color: var(--tilt);
+  border-color: var(--tilt);
 }
 
 @media (prefers-reduced-motion: reduce) {
