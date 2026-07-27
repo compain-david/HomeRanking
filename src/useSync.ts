@@ -38,11 +38,25 @@ const readHousehold = (): Household | null => {
  * instantly and survive a dead kitchen wifi. Writes are pushed afterwards, and
  * anything the other phone changes arrives over realtime and is merged in.
  */
-export function useSync(weekStart: string, local: Counts, onRemote: (c: Counts) => void) {
+export type History = {
+  weeks: { week: string; alix: number; david: number }[]
+  totals: { alix: number; david: number }
+  perChore: Record<string, number>
+}
+
+export function useSync(
+  weekStart: string,
+  local: Counts,
+  onRemote: (c: Counts) => void,
+  pointsFor: (choreId: string) => number,
+) {
   const [household, setHousehold] = useState<Household | null>(readHousehold)
   const [state, setState] = useState<SyncState>('connecting')
   const [error, setError] = useState<string | null>(null)
+  const [history, setHistory] = useState<History | null>(null)
   const onRemoteRef = useRef(onRemote)
+  const pointsForRef = useRef(pointsFor)
+  pointsForRef.current = pointsFor
   const localRef = useRef(local)
   // Writes that failed while offline. Without this, a pull on reconnect would
   // quietly overwrite anything logged with no signal.
@@ -162,6 +176,7 @@ export function useSync(weekStart: string, local: Counts, onRemote: (c: Counts) 
           chore_id: choreId,
           week_start: weekStart,
           count,
+          points: pointsForRef.current(choreId),
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'household_id,person,chore_id,week_start' },
@@ -245,7 +260,7 @@ export function useSync(weekStart: string, local: Counts, onRemote: (c: Counts) 
       const invited = codeFromUrl()
       if (invited) {
         await join(invited)
-        history.replaceState(null, '', window.location.pathname)
+        window.history.replaceState(null, '', window.location.pathname)
       } else {
         await create()
       }
@@ -256,11 +271,48 @@ export function useSync(weekStart: string, local: Counts, onRemote: (c: Counts) 
     ? `${window.location.origin}${window.location.pathname}#join=${household.code}`
     : null
 
+  /** Everything ever logged, for the all-time view and the last-week recap. */
+  const loadHistory = useCallback(async () => {
+    if (!household) return
+    const { data, error } = await supabase
+      .from('entries')
+      .select('person, chore_id, count, points, week_start')
+      .eq('household_id', household.id)
+    if (error || !data) return
+
+    const weeks = new Map<string, { alix: number; david: number }>()
+    const totals = { alix: 0, david: 0 }
+    const perChore: Record<string, number> = {}
+
+    for (const r of data) {
+      if (!r.count) continue
+      // points were frozen when logged; fall back for rows written before that
+      const pts = (r.points || pointsForRef.current(r.chore_id)) * r.count
+      const w = weeks.get(r.week_start) ?? { alix: 0, david: 0 }
+      w[r.person as PersonId] += pts
+      weeks.set(r.week_start, w)
+      totals[r.person as PersonId] += pts
+      perChore[r.chore_id] = (perChore[r.chore_id] ?? 0) + r.count
+    }
+
+    setHistory({
+      weeks: [...weeks.entries()]
+        .map(([week, v]) => ({ week, ...v }))
+        .sort((a, b) => b.week.localeCompare(a.week)),
+      totals,
+      perChore,
+    })
+  }, [household])
+
+  useEffect(() => {
+    loadHistory()
+  }, [loadHistory, weekStart])
+
   const leave = useCallback(() => {
     localStorage.removeItem(HOUSEHOLD_KEY)
     setHousehold(null)
     setState('connecting')
   }, [])
 
-  return { household, state, error, push, create, join, leave, shareUrl }
+  return { household, state, error, push, create, join, leave, shareUrl, history, loadHistory }
 }

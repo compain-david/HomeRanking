@@ -4,6 +4,7 @@ import { daysLeft, weekKey, weekLabel } from './week'
 import { EMPTY_COUNTS, useSync, type Counts, type PersonId } from './useSync'
 import SCHEMA_SQL from '../supabase/schema.sql?raw'
 import Settings from './Settings'
+import AllTime from './AllTime'
 import { CATEGORY_EMOJI, CATEGORY_NAMES, useChores } from './useChores'
 
 const PROJECT = 'jasildjjlncoriepjosp'
@@ -21,6 +22,41 @@ const PEOPLE = [
 
 const EMPTY = EMPTY_COUNTS
 const storageKey = (wk: string) => `homeranking:v1:${wk}`
+
+/**
+ * Past weeks are already sitting in local storage under their own keys — they
+ * were just never read back. This makes the all-time view work before, and
+ * without, any connection.
+ */
+function localHistory(pointsOf: (id: string) => number) {
+  const weeks: { week: string; alix: number; david: number }[] = []
+  const totals = { alix: 0, david: 0 }
+  const perChore: Record<string, number> = {}
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (!key?.startsWith('homeranking:v1:')) continue
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key)!) as Counts
+      const week = key.slice('homeranking:v1:'.length)
+      const row = { week, alix: 0, david: 0 }
+      for (const person of ['alix', 'david'] as PersonId[]) {
+        for (const [id, n] of Object.entries(parsed[person] ?? {})) {
+          if (!n) continue
+          row[person] += pointsOf(id) * n
+          perChore[id] = (perChore[id] ?? 0) + n
+        }
+      }
+      totals.alix += row.alix
+      totals.david += row.david
+      if (row.alix || row.david) weeks.push(row)
+    } catch {
+      /* skip an unreadable week rather than losing the rest */
+    }
+  }
+  weeks.sort((a, b) => b.week.localeCompare(a.week))
+  return { weeks, totals, perChore }
+}
 
 function loadCounts(wk: string): Counts {
   try {
@@ -159,9 +195,17 @@ export default function App() {
     localStorage.setItem(storageKey(wk), JSON.stringify(counts))
   }, [counts, wk])
 
-  const sync = useSync(wk, counts, setCounts)
+  const [chorePoints, setChorePoints] = useState<Record<string, number>>({})
+  const sync = useSync(wk, counts, setCounts, (id) => chorePoints[id] ?? 0)
   const choreApi = useChores(sync.household?.id ?? null)
-  const [showSettings, setShowSettings] = useState(false)
+
+  // the sync layer needs current scores to freeze them onto each write
+  useEffect(() => {
+    setChorePoints(
+      Object.fromEntries(choreApi.chores.map((c) => [c.id, c.effort + c.aversion + c.mentalLoad])),
+    )
+  }, [choreApi.chores])
+  const [view, setView] = useState<'week' | 'all' | 'settings'>('week')
 
   // only chores that are switched on, grouped the way the list is drawn
   const groups = useMemo(
@@ -260,10 +304,23 @@ export default function App() {
           }
         : { flag: 'calm', text: 'Mental load is split fairly evenly this week.' }
 
-  if (showSettings) {
+  if (view === 'settings') {
     return (
       <div className="app" style={style}>
-        <Settings api={choreApi} onClose={() => setShowSettings(false)} />
+        <Settings api={choreApi} onClose={() => setView('week')} />
+      </div>
+    )
+  }
+
+  if (view === 'all') {
+    return (
+      <div className="app" style={style}>
+        <AllTime
+          history={sync.history ?? localHistory((id) => chorePoints[id] ?? 0)}
+          chores={choreApi.chores}
+          currentWeek={wk}
+          onClose={() => setView('week')}
+        />
       </div>
     )
   }
@@ -279,8 +336,15 @@ export default function App() {
             <span className="weekstamp">{weekLabel()}</span>
             <button
               className="gear"
+              aria-label="Since the beginning"
+              onClick={() => setView('all')}
+            >
+              <span aria-hidden="true">∑</span>
+            </button>
+            <button
+              className="gear"
               aria-label="Chores and scores"
-              onClick={() => setShowSettings(true)}
+              onClick={() => setView('settings')}
             >
               <span aria-hidden="true">⚙</span>
             </button>

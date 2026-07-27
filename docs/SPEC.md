@@ -165,11 +165,12 @@ Achievement      id, household_id, person_id, kind, earned_at
 when logged. Retuning scores changes the future, never the past — otherwise
 last week's balance silently rewrites itself and the app loses trust.
 
-> **⚠️ Not yet implemented.** The shipped `entries` table stores a count only,
-> and totals are recalculated from the current chore scores. Editing a score
-> therefore also changes the current week's totals. That is harmless while only
-> the live week is shown, and becomes wrong the moment Phase 3 adds history —
-> so the snapshot column must land before, or with, the weekly recap.
+> **Implemented for synced history.** `entries.points` now freezes the score at
+> write time, so retuning a chore in settings no longer rewrites past weeks in
+> the all-time view. Two caveats: the *current* week's headline still
+> recalculates from live scores, which is intentional while the week is open;
+> and local-only history (used before a household is connected) has no snapshot,
+> so it recalculates from current scores throughout.
 
 ### Scoring vs. metadata
 
@@ -466,7 +467,10 @@ never guilt.
   infrastructure.
 - **Phase 2 — Shared.** Supabase schema + RLS, auth, household invite, realtime
   sync across both phones.
-- **Phase 3 — The week.** Recap screen, streak, weekly reset, achievements.
+- **Phase 3 — The week. Partly built.** ✅ Points frozen at log time, week-by-week
+  history, all-time totals and per-chore tallies ("Since the beginning").
+  ⬜ Still to come: the Sunday recap moment, the shared streak, and the monthly
+  ranking.
 - **Phase 4 — Tuning & polish.** Tune screen, dimension-split view, PWA,
   offline queue, dark mode.
 

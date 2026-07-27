@@ -31,12 +31,18 @@ create table if not exists public.entries (
   chore_id     text not null,
   week_start   date not null,
   count        integer not null default 0 check (count >= 0),
+  -- Points frozen at log time. Without this, retuning a score in settings
+  -- silently rewrites every past week, and the history stops being trustworthy.
+  points       integer not null default 0,
   updated_at   timestamptz not null default now(),
   unique (household_id, person, chore_id, week_start)
 );
 
 create index if not exists entries_week_idx
   on public.entries (household_id, week_start);
+
+-- for households created before the points column existed
+alter table public.entries add column if not exists points integer not null default 0;
 
 -- The household's own chore list. Points are meaningless unless both phones
 -- agree on them, so this cannot live in one device's storage.
