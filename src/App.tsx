@@ -695,9 +695,9 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
       : sync.state === 'offline'
         ? 'offline'
         : 'connecting'
-    : sync.state === 'error'
-      ? 'this device'
-      : 'setting up'
+    : sync.bootstrapping
+      ? 'connecting'
+      : 'not shared'
 
   const share = async () => {
     if (!sync.shareUrl) return
@@ -746,9 +746,19 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
           ) : (
             <>
               <p className="sync-note">
-                Everything you log is safe on this device. Sharing between phones needs
-                the database switched on once.
+                <strong>This phone is on its own.</strong> Everything you log is safe here,
+                but the other phone keeps a separate count until sharing is switched on.
               </p>
+              <div className="sync-actions">
+                <button
+                  className="ghost"
+                  data-primary="true"
+                  onClick={sync.retry}
+                  disabled={sync.bootstrapping}
+                >
+                  {sync.bootstrapping ? 'Trying…' : 'Try again'}
+                </button>
+              </div>
               <SetupGuide />
             </>
           )}

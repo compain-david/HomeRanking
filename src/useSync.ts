@@ -235,6 +235,7 @@ export function useSync(
     setError(null)
     const { data, error } = await supabase.rpc('create_household', { p_name: 'Our home' })
     if (error || !data?.[0]) {
+      setState('error')
       setError(error ? readable(error.message) : 'Could not create the household.')
       return
     }
@@ -249,6 +250,7 @@ export function useSync(
     setError(null)
     const { data, error } = await supabase.rpc('join_household', { p_code: code })
     if (error || !data) {
+      setState('error')
       setError(error ? readable(error.message) : 'No household with that code.')
       return
     }
@@ -259,15 +261,24 @@ export function useSync(
 
   // Nobody should have to decide to "start a household" — there is only ever
   // one, and it exists the moment the app opens. A link is what gets shared.
+  const [bootstrapping, setBootstrapping] = useState(false)
   const bootstrapped = useRef(false)
-  useEffect(() => {
-    if (household || bootstrapped.current) return
-    bootstrapped.current = true
-    ;(async () => {
+
+  const bootstrap = useCallback(async () => {
+    if (household || bootstrapping) return
+    setBootstrapping(true)
+    setError(null)
+    try {
       for (let i = 0; i < 20; i++) {
         const { data } = await supabase.auth.getSession()
         if (data.session) break
         await new Promise((r) => setTimeout(r, 250))
+      }
+      const { data } = await supabase.auth.getSession()
+      if (!data.session) {
+        setState('error')
+        setError(readable('anonymous sign-in unavailable'))
+        return
       }
       const invited = codeFromUrl()
       if (invited) {
@@ -276,8 +287,31 @@ export function useSync(
       } else {
         await create()
       }
-    })()
-  }, [household, create, join])
+    } finally {
+      setBootstrapping(false)
+    }
+  }, [household, bootstrapping, create, join])
+
+  useEffect(() => {
+    if (household || bootstrapped.current) return
+    bootstrapped.current = true
+    bootstrap()
+  }, [household, bootstrap])
+
+  // a failed setup should not be permanent: try again when the tab is looked
+  // at again, or when the network comes back
+  useEffect(() => {
+    if (household) return
+    const retry = () => {
+      if (document.visibilityState === 'visible') bootstrap()
+    }
+    document.addEventListener('visibilitychange', retry)
+    window.addEventListener('online', retry)
+    return () => {
+      document.removeEventListener('visibilitychange', retry)
+      window.removeEventListener('online', retry)
+    }
+  }, [household, bootstrap])
 
   const shareUrl = household
     ? `${window.location.origin}${window.location.pathname}#join=${household.code}`
@@ -336,5 +370,18 @@ export function useSync(
     setState('connecting')
   }, [])
 
-  return { household, state, error, push, create, join, leave, shareUrl, history, loadHistory }
+  return {
+    household,
+    state,
+    error,
+    bootstrapping,
+    retry: bootstrap,
+    push,
+    create,
+    join,
+    leave,
+    shareUrl,
+    history,
+    loadHistory,
+  }
 }

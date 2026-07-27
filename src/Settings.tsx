@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { exportBackup, importBackup } from './backup'
+import { applyTheme, readTheme, type Theme } from './theme'
 import { CATEGORY_EMOJI, CATEGORY_NAMES, type EditableChore } from './useChores'
 import type { useChores } from './useChores'
 
@@ -160,6 +161,11 @@ export default function Settings({
 }) {
   const [editing, setEditing] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
+  const [theme, setThemeState] = useState<Theme>(readTheme)
+  const setTheme = (t: Theme) => {
+    setThemeState(t)
+    applyTheme(t)
+  }
   const fileRef = useRef<HTMLInputElement>(null)
 
   return (
@@ -227,6 +233,29 @@ export default function Settings({
           </section>
         )
       })}
+
+      <section className="settings-cat">
+        <div className="settings-cat-head">
+          <span className="cat-name">Appearance</span>
+        </div>
+        <p className="footer-note" style={{ marginBottom: 10 }}>
+          By default the app follows your phone. Pick one if you would rather it stayed
+          put — the choice is per device.
+        </p>
+        <div className="segmented" role="group" aria-label="Theme">
+          {(['system', 'light', 'dark'] as const).map((t) => (
+            <button
+              key={t}
+              className="seg"
+              data-on={theme === t}
+              aria-pressed={theme === t}
+              onClick={() => setTheme(t)}
+            >
+              {t === 'system' ? 'Auto' : t === 'light' ? 'Light' : 'Dark'}
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="settings-cat">
         <div className="settings-cat-head">
