@@ -72,8 +72,22 @@ anyway**, agreed between you, for simplicity.
 
 ## 2. The table
 
-`t` = weekly target (an expectation for the recap, **not** a multiplier).
-`pts` = points per completion.
+`pts` = points per completion. `t` = **weekly target**.
+
+**What `t` is for.** It is *not* a multiplier and it does not affect anyone's
+score — logging once earns the same points whatever the target says. It does
+three jobs:
+
+1. **The progress counter.** Each chore row reads `3 / 7`, and each category
+   header reads `12 / 34` — the Ludus-style feedback the household liked.
+   Without a target there is no denominator and no sense of progress.
+2. **The recap's "target vs. logged" line.** *"Dishes — target 7, logged 5"* is
+   the sentence that turns raw counts into something you can act on.
+3. **Ordering.** Frequent chores float to the top of their category, so the
+   things you log daily are not buried under things you log twice a year.
+
+Targets are a private expectation, never a judgement — falling short of one is
+information, not a failure, and nothing in the UI should treat it as one.
 
 ### Kitchen & food
 
@@ -88,9 +102,7 @@ anyway**, agreed between you, for simplicity.
 | Grocery shopping | 3 | 3 | 3 | **9** | 1 |
 | Unpack & put away shopping | 1 | 3 | 1 | **5** | 1 |
 | Clean fridge & sort leftovers | 1 | 3 | 3 | **7** | 0.5 |
-| Deep clean oven | 3 | 5 | 1 | **9** | 0.25 |
-| Vacuum the sofa | 1 | 1 | 3 | **5** | 0.5 |
-| Vacuum the chairs | 1 | 1 | 3 | **5** | 0.5 |
+| Vacuum the sofa & chairs | 1 | 1 | 3 | **5** | 0.5 |
 
 ### Bathroom
 
@@ -117,16 +129,13 @@ anyway**, agreed between you, for simplicity.
 | Launch the robot vacuum | 1 | 1 | 3 | **5** | 3 |
 | Empty & clean the robot | 1 | 5 | 3 | **9** | 1 |
 | Buy replacement parts for the robot | 1 | 1 | 5 | **7** | 0.1 |
-| Tidy & declutter shared spaces | 1 | 3 | 3 | **7** | 5 |
 
 ### Bins & recycling
 
 | Chore | E | A | M | pts | t |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Track collection day & put the bins out | 1 | 3 | 5 | **9** | 1 |
-| Bring the bins in from the box | 1 | 3 | 3 | **7** | 1 |
+| Put the bins out | 1 | 3 | 5 | **9** | 1 |
 | Take the rubbish out to the bins | 1 | 3 | 3 | **7** | 2 |
-| Take the cardboard out to the bins | 1 | 3 | 3 | **7** | 1 |
 | Replace the bin bags | 1 | 3 | 1 | **5** | 0.5 |
 | Clean the bin | 1 | 5 | 3 | **9** | 0.25 |
 
@@ -138,11 +147,10 @@ anyway**, agreed between you, for simplicity.
 | Pay bills & manage budget | 1 | 3 | 5 | **9** | 1 |
 | Work on investments | 3 | 1 | 5 | **9** | 1 |
 | Manage the cleaner — payment & schedule | 1 | 3 | 5 | **9** | 0.5 |
-| Book & track appointments | 1 | 3 | 5 | **9** | 1 |
 | Birthdays, gifts & social calendar | 3 | 1 | 5 | **9** | 1 |
 | Track household supplies running low | 1 | 1 | 5 | **7** | 1 |
 | Insurance, renewals, paperwork | 1 | 5 | 5 | **11** | 0.25 |
-| Coordinate repairs & tradespeople | 3 | 5 | 5 | **13** | 0.1 |
+| Coordinate house people | 3 | 5 | 5 | **13** | 0.5 |
 | Wedding logistics & coordination | 3 | 3 | 5 | **11** | 3 |
 
 ### Outdoor & occasional
@@ -153,9 +161,8 @@ anyway**, agreed between you, for simplicity.
 | Mow lawn / garden tidy | 5 | 3 | 3 | **11** | 0.5 |
 | Car maintenance, service, admin | 3 | 3 | 5 | **11** | 0.1 |
 | Wash the car | 3 | 3 | 1 | **7** | 0.25 |
-| Declutter / reorganise a room | 5 | 3 | 3 | **11** | 0.1 |
 
-**45 chores.**
+**38 chores.**
 
 ---
 
@@ -174,6 +181,11 @@ granular version:
 | Mop, Dust, Clean windows | Cleaner |
 | Vacuum | Replaced by the robot chores |
 | Rubbish out on collection day, Sort recycling | Replaced by granular bin chores |
+| Deep clean oven, Declutter a room | Not tracked |
+| Vacuum the chairs | Merged into "vacuum the sofa & chairs" |
+| Tidy & declutter shared spaces | Not tracked |
+| Bring bins in from the box, Take cardboard out | Not tracked |
+| Book & track appointments | Not tracked |
 
 ---
 
@@ -181,13 +193,13 @@ granular version:
 
 ### Outsourcing cleaning removed effort, not mental load
 
-Expected weekly load ≈ **482 points**, split by dimension:
+Expected weekly load ≈ **423 points**, split by dimension:
 
 | Dimension | Points | Share |
 |---|:-:|:-:|
-| Effort | 112 | 23% |
-| Aversion | 158 | 33% |
-| **Mental load** | **212** | **44%** |
+| Effort | 103 | 24% |
+| Aversion | 134 | 32% |
+| **Mental load** | **186** | **44%** |
 
 **Mental load rose from ~35% to 44%, and is now by far the largest dimension —
 almost double physical effort.** Bringing in a cleaner deleted eight physical
@@ -203,7 +215,7 @@ didn't — it got proportionally more mental.
 
 | Heaviest per completion | pts | | Heaviest per week | wk |
 |---|:-:|---|---|:-:|
-| Coordinate repairs & tradespeople | 13 | | Cook dinner | 35 |
+| Coordinate house people | 13 | | Cook dinner | 35 |
 | Insurance, renewals, paperwork | 11 | | Wedding logistics | 33 |
 | Wedding logistics | 11 | | Launch the dishwasher | 25 |
 | Mow lawn / garden tidy | 11 | | Empty the dishwasher | 25 |
