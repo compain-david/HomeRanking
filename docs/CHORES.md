@@ -155,7 +155,7 @@ anyway**, agreed between you, for simplicity.
 | Wash the car | 3 | 3 | 1 | **7** | 0.25 |
 | Declutter / reorganise a room | 5 | 3 | 3 | **11** | 0.1 |
 
-**43 chores.**
+**45 chores.**
 
 ---
 
@@ -172,7 +172,6 @@ granular version:
 | Ironing, Dry cleaning & repairs | Cleaner / not applicable |
 | Change bed sheets | Replaced by "put out the sheets for the cleaner" |
 | Mop, Dust, Clean windows | Cleaner |
-| Tidy & declutter shared spaces | Removed on request — **see flag below** |
 | Vacuum | Replaced by the robot chores |
 | Rubbish out on collection day, Sort recycling | Replaced by granular bin chores |
 
@@ -182,13 +181,13 @@ granular version:
 
 ### Outsourcing cleaning removed effort, not mental load
 
-Expected weekly load ≈ **438 points**, split by dimension:
+Expected weekly load ≈ **482 points**, split by dimension:
 
 | Dimension | Points | Share |
 |---|:-:|:-:|
-| Effort | 106 | 24% |
-| Aversion | 140 | 32% |
-| **Mental load** | **192** | **44%** |
+| Effort | 112 | 23% |
+| Aversion | 158 | 33% |
+| **Mental load** | **212** | **44%** |
 
 **Mental load rose from ~35% to 44%, and is now by far the largest dimension —
 almost double physical effort.** Bringing in a cleaner deleted eight physical
@@ -225,21 +224,18 @@ if it isn't tracked the robot degrades. Pure invisible work, correctly priced.
 
 ## 5. Flags & open questions
 
-1. **⚠️ Tidying was deleted, and it was joint-second heaviest** (35 pts/wk).
-   A cleaner *cleans* — she generally doesn't put your belongings away. If
-   tidying still happens, deleting it removes one of the largest real loads
-   from view, which is exactly the failure mode this app exists to prevent.
-   Confirm: genuinely not happening, or invisible-but-real?
-2. **⚠️ Bin-day tracking disappeared.** The old "rubbish out on collection
-   day" scored 9 mostly on mental load — a hard deadline with no cue. The new
-   bin chores are the physical act only. Does someone still have to remember
-   collection day and get the bins to the street? If so it needs its own entry.
-3. **Three readings to confirm** — "remove dish from dishwasher" read as
-   *empty the dishwasher* (not "delete"); "remove and put the laundry on the
-   étendoir" read as *unload and hang*; **"remove bins from the box"** read as
-   *bring the bins in from their outdoor box* — least confident of the three.
-4. **How often does the cleaner come?** Drives targets for the sheets and
-   payment chores, and may remove more entries.
-5. **Toilet, sink and counters** were kept — does the cleaner do these too?
-6. **Garden and car were kept** ("Outdoor — perfect"), so confirming: you do
-   have both?
+**Resolved:** tidying restored (real load); bin-day tracking added as its own
+chore; the three shorthand readings confirmed; cleaner comes **fortnightly**;
+wedding logistics stays in Admin; garden and car both apply.
+
+**Open:**
+
+1. **Targets are still estimates.** How many nights do you actually cook? How
+   many laundry loads a week? These move the expected totals more than the
+   scores do — but they are also the easiest thing to correct from real use
+   after a fortnight of logging.
+2. **Does the cleaner do the toilet, sink and counters?** All three were kept.
+   If she covers them fortnightly, the targets should drop rather than the
+   chores being deleted — you still do them between visits.
+3. **`fixed_window`** — which chores have a genuine deadline? Bin collection
+   day certainly; anything else?
