@@ -80,6 +80,30 @@ weekly load        = points × times done per week
 Multiplying by frequency is what makes a daily two-minute task correctly
 outweigh a rare heavy one.
 
+Full anchors for each level, the seed chore table and the derived analysis live
+in [CHORES.md](./CHORES.md).
+
+### Input method: S / M / L, not sliders
+
+The scoring *model* and the scoring *UI* are separate problems. The model is
+E/A/M on a 1–5 scale; the input is three **S / M / L** taps per chore
+(= 1 / 3 / 5), with 2 and 4 available for precision. Asking for 99 numeric
+decisions across 33 chores is enough friction to lose the user during setup.
+
+### Why not time-based weighting
+
+Time in minutes is the intuitive choice and the wrong one:
+
+- It **punishes efficiency** — get faster at a chore, earn fewer points.
+- It **flattens aversion** — 20 minutes scrubbing a toilet ≠ 20 minutes
+  folding laundry in front of the TV.
+- **Mental load has no duration.** Carrying "the car service is due" occupies
+  no minutes and three weeks of headspace, so a time-based system scores the
+  invisible work at zero — reintroducing the exact bias this app exists to fix.
+
+Time estimates are still displayed per chore as **metadata**, to keep the
+numbers grounded and sanity-checkable. They never drive the score.
+
 ### Why mental load is its own axis
 
 This is the central fix. Scoring only Effort and Aversion reproduces exactly
@@ -146,7 +170,7 @@ deleted.
 | **Today** (home) | The daily 10-second loop. Chore list, one tap to log. Beam at top. Streak visible. | The screen that must be beautiful and fast. Everything else is secondary. |
 | **Balance** | The live beam, split by person *and by dimension* (E / A / M). | Where the mental-load insight lives. |
 | **Week recap** | Sunday summary, verdict, one suggestion, streak resolution, reset. | The emotional payoff of the week. |
-| **Tune** | Edit chores, E/A/M scores, frequencies, add/remove. | Designed to be used *together*, occasionally. |
+| **Tune** (settings) | Add / edit / deactivate chores, set E/A/M via S/M/L, set frequency and time estimate. | Designed to be used *together*, occasionally. Adding a chore must take under ~15 seconds: name, category, three taps, frequency. Unused chores are **deactivated, not deleted**, so they stop distorting totals without losing their history. |
 | **Setup** | Create household, invite partner, pick colours/avatars. | One-time. |
 
 ## 7. Gamification
@@ -172,18 +196,32 @@ opt-in and limited to the weekly recap).
 
 ## 8. Design direction
 
-**Elegant base, playful reward layer.**
+**Three layers, not three styles.** Editorial, data-viz and playful are not
+competing directions — they own different pixels and different moments, so the
+app runs all three at once.
 
-The resting state is calm, typographic and grown-up — generous whitespace,
-restrained palette, precise numbers. The playfulness lives entirely in the
-*interaction moments*: the burst when you log, the beam's spring animation, the
-streak flame, the recap reveal.
+| Layer | Owns | Direction |
+|---|---|---|
+| **Base** — layout, type, spacing, colour | ~80% of the screen, at rest | Elegant & editorial |
+| **Data** — beam, E/A/M split, recap charts | The numbers, wherever they appear | Bold data-viz |
+| **Reward** — log burst, beam spring, streak, recap reveal | Moments, not surfaces | Playful |
 
 Rationale: Strava and Duolingo are not childish apps. Their base layer is
 sober; the delight is in the reward moments. A cartoon-styled base would read
 as twee for two adults and get abandoned by week three, while a purely
-editorial design has no pull to open it. This hybrid takes the beauty of the
-former and the retention of the latter.
+editorial design has no pull to open it.
+
+**The failure mode to guard against is clutter, not conflict.** Bold data-viz
+done badly means twelve widgets on one screen. Done well it means *one hero
+chart, rendered confidently* — which stays fully compatible with editorial
+calm. One screen, one hero.
+
+**On maximising daily use.** The design targets ~9/10 on drives-daily-use, not
+10/10, and that gap is deliberate. The last point comes from loss-aversion
+streaks, variable rewards and nagging notifications. Those work, and every one
+of them is rejected here: a mechanic that makes you feel bad for missing a day
+is tolerable in a solo app and manufactures blame between partners. Delight,
+never guilt.
 
 **Visual system:**
 - Two person-colours (teal / violet by default, editable) used consistently
