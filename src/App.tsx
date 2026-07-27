@@ -191,16 +191,9 @@ export default function App() {
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(CATEGORY_NAMES.map((n, i) => [n, i === 0])),
   )
-  const [compact, setCompact] = useState(false)
   // clearing is reversible rather than confirmed: a dialog interrupts, an undo
   // costs nothing and is still there if the tap was a mistake
   const [undo, setUndo] = useState<Counts | null>(null)
-
-  useEffect(() => {
-    const onScroll = () => setCompact(window.scrollY > 64)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
 
   useEffect(() => {
     localStorage.setItem(storageKey(wk), JSON.stringify(counts))
@@ -217,6 +210,8 @@ export default function App() {
     )
   }, [choreApi.chores])
   const [view, setView] = useState<'week' | 'all' | 'settings'>('week')
+  const [q, setQ] = useState('')
+  const [dim, setDim] = useState<'e' | 'a' | 'm' | null>(null)
 
   const hist = useMemo(
     () => sync.history ?? localHistory((id) => chorePoints[id] ?? 0),
@@ -329,6 +324,47 @@ export default function App() {
   // The headline total can read level while the experience is not: one
   // person's points can be mostly effort and the other's mostly mental load.
   // This is the comparison the app exists to surface.
+  // one flat list while searching — categories are noise when you know the name
+  const matches = useMemo(() => {
+    const needle = q.trim().toLowerCase()
+    if (!needle) return null
+    return choreApi.chores
+      .filter((c) => c.active && c.name.toLowerCase().includes(needle))
+      .slice(0, 10)
+  }, [q, choreApi.chores])
+
+  const houseDims = {
+    e: totals.alix.e + totals.david.e,
+    a: totals.alix.a + totals.david.a,
+    m: totals.alix.m + totals.david.m,
+  }
+  const dimSum = houseDims.e + houseDims.a + houseDims.m || 1
+
+  // whose points a dimension mostly comes from — the note under each pill
+  const carrierOf = (k: 'e' | 'a' | 'm') => {
+    const a = totals.alix[k]
+    const tot = a + totals.david[k]
+    if (!tot) return { text: 'no data', who: null as PersonId | null }
+    const pct = (a / tot) * 100
+    if (Math.abs(pct - 50) < 10) return { text: 'even', who: null as PersonId | null }
+    const w: PersonId = pct > 50 ? 'alix' : 'david'
+    const name = w === 'alix' ? 'Alix' : 'David'
+    return { text: Math.abs(pct - 50) >= 20 ? `mostly ${name}` : `more ${name}`, who: w }
+  }
+
+  // the chores actually driving a dimension, for the expanded pill
+  const driversOf = (k: 'e' | 'a' | 'm') =>
+    choreApi.chores
+      .map((c) => {
+        const dv = k === 'e' ? c.effort : k === 'a' ? c.aversion : c.mentalLoad
+        const a = counts.alix[c.id] ?? 0
+        const dd = counts.david[c.id] ?? 0
+        return { c, a, d: dd, weight: (a + dd) * dv }
+      })
+      .filter((x) => x.weight > 0)
+      .sort((x, y) => y.weight - x.weight)
+      .slice(0, 3)
+
   const mlTotal = totals.alix.m + totals.david.m
   const mlPctA = mlTotal ? Math.round((totals.alix.m / mlTotal) * 100) : 50
   // 60/40 and beyond is worth naming: when the totals are level, that gap is
@@ -378,31 +414,23 @@ export default function App() {
 
   return (
     <div className="app" style={style}>
-      <header className="panel" data-compact={compact}>
-        <div className="masthead">
-          <div className="wordmark">
-            Home<span>Ranking</span>
-          </div>
-          <div className="mast-right">
-            <span className="weekstamp">{weekLabel()}</span>
-            <button
-              className="gear"
-              aria-label="Since the beginning"
-              onClick={() => setView('all')}
-            >
-              <span aria-hidden="true">∑</span>
-            </button>
-            <button
-              className="gear"
-              aria-label="Chores and scores"
-              onClick={() => setView('settings')}
-            >
-              <span aria-hidden="true">⚙</span>
-            </button>
-          </div>
+      <header className="panel">
+        <div className="hdr">
+          <SyncBar sync={sync} />
+          <button className="hdr-btn glass" aria-label="Since the beginning" onClick={() => setView('all')}>
+            <span aria-hidden="true">∑</span>
+          </button>
+          <button className="hdr-btn glass" aria-label="Chores and scores" onClick={() => setView('settings')}>
+            <span aria-hidden="true">⚙</span>
+          </button>
         </div>
 
-        <SyncBar sync={sync} />
+        <div className="lede">
+          <span className="lede-kicker">Alix &amp; David</span>
+          <h1 className="lede-title">
+            Who carries <em style={{ textShadow: `0 0 18px color-mix(in srgb, ${person.varName} 45%, transparent)` }}>the week?</em>
+          </h1>
+        </div>
 
         <div className="tabs" role="tablist" aria-label="Whose list">
           {PEOPLE.map((p) => (
@@ -412,6 +440,7 @@ export default function App() {
               aria-selected={who === p.id}
               className="tab"
               data-on={who === p.id}
+              data-who={p.id}
               style={{ '--who': p.varName } as React.CSSProperties}
               onClick={() => setWho(p.id)}
             >
@@ -421,92 +450,98 @@ export default function App() {
           ))}
         </div>
 
-        <div className="readout">
-          <div>
-            <div className="readout-total" aria-live="polite" aria-atomic="true">
-              {shownTotal}
+        <section className="hero glass">
+          <div className="hero-totals">
+            <div className="hero-side" data-side="left" data-active={who === 'alix'}>
+              <span className="hero-name">Alix</span>
+              <span className="hero-num" data-who="alix">
+                {who === 'alix' ? shownTotal : totals.alix.total}
+              </span>
             </div>
-            <span className="readout-label">points this week</span>
-          </div>
-          <div className="readout-side">
-            <div className="readout-done">
-              {active.done} {active.done === 1 ? 'chore' : 'chores'}
-            </div>
-          </div>
-        </div>
-
-        <div className="beam">
-          <div
-            className="beam-track"
-            role="img"
-            aria-label={`Balance: Alix ${pctA} percent, David ${100 - pctA} percent`}
-          >
-            <div className="beam-pan" data-side="left">
-              <div className="beam-arm" data-who="alix" style={{ width: `${armA}%` }} />
-            </div>
-            <div className="beam-fulcrum" />
-            <div className="beam-pan" data-side="right">
-              <div className="beam-arm" data-who="david" style={{ width: `${armD}%` }} />
-            </div>
-          </div>
-          <div className="beam-verdict">
-            <span className="chip" data-state={state}>
-              {state === 'empty' ? 'no data' : state === 'level' ? 'balanced' : `${heavier} +${gap}`}
+            <span className="hero-chip" data-tone={state === 'tilt' ? 'tilt' : 'calm'}>
+              {state === 'empty' ? 'no data yet' : state === 'level' ? 'in balance' : `${heavier} +${gap}`}
             </span>
-            <span>{verdict}</span>
-          </div>
-        </div>
-      </header>
-
-      <section className="compare">
-        <div className="compare-head">
-          <span className="split-title">What the points are made of</span>
-          <span className="compare-legend" aria-hidden="true">
-            {(['e', 'a', 'm'] as const).map((dim) => (
-              <span className="legend-item" key={dim}>
-                <span className="legend-swatch" data-dim={dim} />
-                {dim === 'e' ? 'Effort' : dim === 'a' ? 'Aversion' : 'Mental'}
+            <div className="hero-side" data-side="right" data-active={who === 'david'}>
+              <span className="hero-name">David</span>
+              <span className="hero-num" data-who="david">
+                {who === 'david' ? shownTotal : totals.david.total}
               </span>
-            ))}
-          </span>
-        </div>
-
-        {PEOPLE.map((pp) => {
-          const t = totals[pp.id]
-          const sum = t.e + t.a + t.m || 1
-          // bars are scaled against the heavier person, so their lengths
-          // compare directly instead of both filling the width
-          const scale = (t.total / heaviest) * 100
-          return (
-            <div
-              className="compare-row"
-              key={pp.id}
-              style={{ '--who': pp.varName } as React.CSSProperties}
-            >
-              <span className="compare-name">{pp.name}</span>
-              <span className="compare-track">
-                <span className="compare-bar" style={{ width: `${scale}%` }}>
-                  {(['e', 'a', 'm'] as const).map((dim) => (
-                    <span
-                      key={dim}
-                      className="split-seg"
-                      data-dim={dim}
-                      style={{ width: `${((dim === 'e' ? t.e : dim === 'a' ? t.a : t.m) / sum) * 100}%` }}
-                    />
-                  ))}
-                </span>
-              </span>
-              <span className="compare-total">{t.total}</span>
             </div>
-          )
-        })}
+          </div>
 
-        {insight && (
-          <p className="insight" data-flag={insight.flag}>
-            {insight.text}
-          </p>
-        )}
-      </section>
+          <div
+            className="beam2"
+            role="img"
+            aria-label={`Alix ${pctA} percent, David ${100 - pctA} percent`}
+            style={{
+              transform: `rotate(${Math.max(-1.4, Math.min(1.4, (totals.david.total - totals.alix.total) * 0.05))}deg)`,
+            }}
+          >
+            <span className="beam2-side" data-side="left">
+              <span className="beam2-arm" data-who="alix" style={{ width: `${armA}%` }} />
+            </span>
+            <span className="beam2-pivot" />
+            <span className="beam2-side" data-side="right">
+              <span className="beam2-arm" data-who="david" style={{ width: `${armD}%` }} />
+            </span>
+          </div>
+
+          <p className="hero-verdict">{verdict}</p>
+
+          <div className="dims">
+            {(['e', 'a', 'm'] as const).map((k) => {
+              const carrier = carrierOf(k)
+              const lopsided = k === 'm' && mlLopsided
+              return (
+                <button
+                  key={k}
+                  className="dim"
+                  data-open={dim === k}
+                  data-flag={lopsided}
+                  aria-expanded={dim === k}
+                  style={
+                    {
+                      '--carrier': carrier.who === 'alix' ? 'var(--alix)' : 'var(--david)',
+                    } as React.CSSProperties
+                  }
+                  onClick={() => setDim((cur) => (cur === k ? null : k))}
+                >
+                  <span className="dim-label">
+                    {k === 'e' ? 'Effort' : k === 'a' ? 'Aversion' : 'Mental'}
+                  </span>
+                  <span className="dim-pct">{Math.round((houseDims[k] / dimSum) * 100)}%</span>
+                  <span className="dim-note">{carrier.text}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {dim && (
+            <div className="dim-drill">
+              <span className="drill-title">What drives it</span>
+              {driversOf(dim).length === 0 ? (
+                <span className="drill-counts">Nothing logged yet.</span>
+              ) : (
+                driversOf(dim).map((x) => (
+                  <div className="drill-row" key={x.c.id}>
+                    <span className="drill-name">{x.c.name}</span>
+                    <span className="drill-counts">
+                      Alix ×{x.a} · David ×{x.d}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {insight && (
+            <p className="hero-insight" data-flag={insight.flag}>
+              {insight.text}
+            </p>
+          )}
+        </section>
+
+      </header>
 
       {showRecap && lastWeek && (
         <Recap
@@ -542,11 +577,45 @@ export default function App() {
         </section>
       )}
 
-      {usual.length > 0 && (
+      <div className="search">
+        <span className="search-icon" aria-hidden="true">⌕</span>
+        <input
+          className="search-input"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Find a chore…"
+          aria-label="Find a chore"
+        />
+        {q && (
+          <button className="search-clear" onClick={() => setQ('')} aria-label="Clear search">
+            ✕
+          </button>
+        )}
+      </div>
+
+      {matches && (
+        <section className="cat">
+          <div className="sectionlabel">
+            <span>{matches.length ? `${matches.length} match${matches.length === 1 ? '' : 'es'}` : 'No chore by that name'}</span>
+          </div>
+          <div className="cat-body">
+            {matches.map((c) => (
+              <Row
+                key={`m-${c.id}`}
+                chore={c}
+                count={counts[who][c.id] ?? 0}
+                onBump={(delta) => bump(who, c.id, delta)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!matches && usual.length > 0 && (
         <section className="cat" key="usual">
-          <div className="cat-head" aria-hidden="true">
-            <span className="cat-emoji">↩</span>
-            <span className="cat-name">What you do most</span>
+          <div className="sectionlabel">
+            <span>{person.name}&rsquo;s usuals</span>
+            <em>most logged first</em>
           </div>
           <div className="cat-body">
             {usual.map((c) => (
@@ -561,7 +630,7 @@ export default function App() {
         </section>
       )}
 
-      {groups.map((cat) => {
+      {!matches && groups.map((cat) => {
         const logged = cat.chores.reduce((s, c) => s + (counts[who][c.id] ?? 0), 0)
         const target = cat.chores.reduce((s, c) => s + c.target, 0)
         const isOpen = open[cat.name]
@@ -622,13 +691,13 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
 
   const label = connected
     ? sync.state === 'live'
-      ? 'Shared with Alix'
+      ? 'synced'
       : sync.state === 'offline'
-        ? 'Offline — saved here'
-        : 'Connecting…'
+        ? 'offline'
+        : 'connecting'
     : sync.state === 'error'
-      ? 'Not shared yet'
-      : 'Setting up…'
+      ? 'this device'
+      : 'setting up'
 
   const share = async () => {
     if (!sync.shareUrl) return
@@ -648,12 +717,13 @@ function SyncBar({ sync }: { sync: ReturnType<typeof useSync> }) {
   return (
     <div className="sync">
       <button
-        className="sync-chip"
+        className="hdr-pill glass"
         data-state={connected ? sync.state : 'none'}
+        aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className="sync-dot" />
-        {label}
+        <span className="hdr-dot" />
+        {weekLabel()} · {label}
       </button>
 
       {open && (
