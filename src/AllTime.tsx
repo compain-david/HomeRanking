@@ -33,7 +33,10 @@ export default function AllTime({
   const past = (history?.weeks ?? []).filter((w) => w.week !== currentWeek)
   const done = history?.perChore ?? {}
   const ranked = chores
-    .map((c) => ({ ...c, times: done[c.id] ?? 0 }))
+    .map((c) => {
+      const t = done[c.id] ?? { alix: 0, david: 0 }
+      return { ...c, alix: t.alix, david: t.david, times: t.alix + t.david }
+    })
     .filter((c) => c.times > 0)
     .sort((a, b) => b.times - a.times)
 
@@ -105,7 +108,11 @@ export default function AllTime({
 
       <section className="settings-cat">
         <div className="settings-cat-head">
-          <span className="cat-name">How often each chore has been done</span>
+          <span className="cat-name">Who has done what, how often</span>
+          <span className="tally-key">
+            <span className="tally-key-item" data-who="alix">Alix</span>
+            <span className="tally-key-item" data-who="david">David</span>
+          </span>
         </div>
         {ranked.length === 0 ? (
           <p className="footer-note">Nothing logged yet.</p>
@@ -113,9 +120,28 @@ export default function AllTime({
           ranked.map((c) => (
             <div className="tallyrow" key={c.id}>
               <span className="tallyrow-name">{c.name}</span>
-              <span className="tallyrow-count">
-                {c.times}
-                <small>×</small>
+              <span className="tallyrow-split" aria-hidden="true">
+                <span className="tallyrow-a" style={{ width: `${(c.alix / c.times) * 100}%` }} />
+                <span className="tallyrow-d" style={{ width: `${(c.david / c.times) * 100}%` }} />
+              </span>
+              <span className="tallyrow-counts">
+                <span
+                  className="tallyrow-count"
+                  data-who="alix"
+                  data-zero={c.alix === 0}
+                  title={`Alix ${c.alix}`}
+                >
+                  {c.alix}
+                </span>
+                <span className="tallyrow-slash">/</span>
+                <span
+                  className="tallyrow-count"
+                  data-who="david"
+                  data-zero={c.david === 0}
+                  title={`David ${c.david}`}
+                >
+                  {c.david}
+                </span>
               </span>
             </div>
           ))

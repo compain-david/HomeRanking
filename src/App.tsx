@@ -31,7 +31,7 @@ const storageKey = (wk: string) => `homeranking:v1:${wk}`
 function localHistory(pointsOf: (id: string) => number) {
   const weeks: { week: string; alix: number; david: number }[] = []
   const totals = { alix: 0, david: 0 }
-  const perChore: Record<string, number> = {}
+  const perChore: Record<string, { alix: number; david: number }> = {}
 
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
@@ -44,7 +44,8 @@ function localHistory(pointsOf: (id: string) => number) {
         for (const [id, n] of Object.entries(parsed[person] ?? {})) {
           if (!n) continue
           row[person] += pointsOf(id) * n
-          perChore[id] = (perChore[id] ?? 0) + n
+          const tally = (perChore[id] ??= { alix: 0, david: 0 })
+          tally[person] += n
         }
       }
       totals.alix += row.alix

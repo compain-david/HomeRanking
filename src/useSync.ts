@@ -41,7 +41,9 @@ const readHousehold = (): Household | null => {
 export type History = {
   weeks: { week: string; alix: number; david: number }[]
   totals: { alix: number; david: number }
-  perChore: Record<string, number>
+  /** times each person has done each chore — a household total would hide
+      exactly the thing this app exists to show */
+  perChore: Record<string, { alix: number; david: number }>
 }
 
 export function useSync(
@@ -282,7 +284,7 @@ export function useSync(
 
     const weeks = new Map<string, { alix: number; david: number }>()
     const totals = { alix: 0, david: 0 }
-    const perChore: Record<string, number> = {}
+    const perChore: History['perChore'] = {}
 
     for (const r of data) {
       if (!r.count) continue
@@ -292,7 +294,8 @@ export function useSync(
       w[r.person as PersonId] += pts
       weeks.set(r.week_start, w)
       totals[r.person as PersonId] += pts
-      perChore[r.chore_id] = (perChore[r.chore_id] ?? 0) + r.count
+      const tally = (perChore[r.chore_id] ??= { alix: 0, david: 0 })
+      tally[r.person as PersonId] += r.count
     }
 
     setHistory({

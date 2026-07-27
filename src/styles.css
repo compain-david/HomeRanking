@@ -1339,16 +1339,65 @@ a.ghost {
   font-size: 13.5px;
 }
 
-.tallyrow-count {
-  font-family: var(--data);
-  font-size: 16px;
-  color: var(--ink);
+.tallyrow-split {
+  display: flex;
+  width: 52px;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--sunken);
   flex: none;
+}
+
+.tallyrow-a {
+  background: var(--alix);
+}
+
+.tallyrow-d {
+  background: var(--david);
+}
+
+.tallyrow-counts {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  flex: none;
+  font-family: var(--data);
+  font-size: 15px;
   font-variant-numeric: tabular-nums;
 }
 
-.tallyrow-count small {
-  font-size: 11px;
+.tallyrow-count[data-who='alix'] {
+  color: var(--alix);
+}
+
+.tallyrow-count[data-who='david'] {
+  color: var(--david);
+}
+
+.tallyrow-count[data-zero='true'] {
   color: var(--faint);
-  margin-left: 1px;
+}
+
+.tallyrow-slash {
+  color: var(--line);
+  font-size: 13px;
+}
+
+.settings-cat-head .tally-key {
+  display: flex;
+  gap: 9px;
+  margin-left: auto;
+}
+
+.tally-key-item {
+  font-size: 10.5px;
+}
+
+.tally-key-item[data-who='alix'] {
+  color: var(--alix);
+}
+
+.tally-key-item[data-who='david'] {
+  color: var(--david);
 }
